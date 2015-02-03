@@ -4,21 +4,25 @@ psforms.mappings
 ================
 Mappings from standard python types to psform.controls types.
 
-:attr standard_mapping: The default mapping::
+:attr:`STANDARD`
+----------------
+The default mapping
 
-    int   -> controls.SpinBox
-    float -> controls.DoubleSpinBox
-    bool  -> controls.CheckBox
-    list  -> controls.ComboBox
-    tuple -> controls.IntComboBox
-    str   -> controls.LineEdit
+ * int   -> controls.SpinBox
+ * float -> controls.DoubleSpinBox
+ * bool  -> controls.CheckBox
+ * list  -> controls.ComboBox
+ * tuple -> controls.IntComboBox
+ * str   -> controls.LineEdit
 
-:attr spin_mapping: Maps types to spinboxes::
+:attr:`SPIN`
+------------
+Maps types to spinboxes
 
-    int   -> controls.SpinBox
-    float -> controls.DoubleSpinBox
-    list  -> controls.TwinDoubleSpinBox
-    tuple -> controls.DoubleSpinBox
+ * int   -> controls.SpinBox
+ * float -> controls.DoubleSpinBox
+ * list  -> controls.TwinDoubleSpinBox
+ * tuple -> controls.DoubleSpinBox
 
 These are used with the :class:`ControlFactory` s to produce controls from a
 dictionary like this one::
@@ -34,7 +38,7 @@ dictionary like this one::
 from . import controls
 
 
-standard_mapping = {
+STANDARD = {
     int: controls.SpinBox,
     float: controls.DoubleSpinBox,
     bool: controls.CheckBox,
@@ -43,7 +47,7 @@ standard_mapping = {
     str: controls.LineEdit,
 }
 
-spin_mapping = {
+SPIN = {
     int: controls.SpinBox,
     float: controls.DoubleSpinBox,
     list: controls.TwinDoubleSpinBox,

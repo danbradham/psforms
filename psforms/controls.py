@@ -4,8 +4,8 @@ psforms.controls
 ================
 Wraps standard PySide input widgets providing a unified api for getting and
 setting their values. Each control implements :meth:`get_value` and
-:meth:`set_value`. A required position argument :param:`value` or
-:param:`values` is used to set the default value of the control or in the case
+:meth:`set_value`. A required position argument ``value`` or
+``values`` is used to set the default value of the control or in the case
 of :class:`ComboBox` and :class:`IntComboBox` a sequence of items to add to
 the wrapped QComboBox. In addition each control emits a Signal named `changed`
 whenever the value is changed by user interaction.
@@ -50,20 +50,20 @@ class Label(QtGui.QLabel):
         self.clicked.emit()
 
 
-class RightLabel(Label):
-    '''Convenience right aligned Label'''
+# class RightLabel(Label):
+#     '''Convenience right aligned Label'''
 
-    def __init__(self, *args, **kwargs):
-        super(RightLabel, self).__init__(*args, **kwargs)
-        self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+#     def __init__(self, *args, **kwargs):
+#         super(RightLabel, self).__init__(*args, **kwargs)
+#         self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
 
-class LeftLabel(Label):
-    '''Convenience left aligned Label'''
+# class LeftLabel(Label):
+#     '''Convenience left aligned Label'''
 
-    def __init__(self, *args, **kwargs):
-        super(RightLabel, self).__init__(*args, **kwargs)
-        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+#     def __init__(self, *args, **kwargs):
+#         super(LeftLabel, self).__init__(*args, **kwargs)
+#         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox):

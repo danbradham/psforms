@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import os
 import sys
+import mock
+MOCK_MODULES = ['PySide']
+sys.modules.update((mod_name, mock.Mock()) for mod_name in MOCK_MODULES)
+
 sys.path.insert(0, os.path.abspath('..'))
 import psforms
 

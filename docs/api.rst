@@ -9,6 +9,7 @@ Controls
 
 .. automodule:: psforms.controls
     :members:
+    :undoc members:
 
 Mappings
 --------
