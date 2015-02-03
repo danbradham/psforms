@@ -10,8 +10,8 @@ of :class:`ComboBox` and :class:`IntComboBox` a sequence of items to add to
 the wrapped QComboBox. In addition each control emits a Signal named `changed`
 whenever the value is changed by user interaction.
 '''
-
 from PySide import QtGui, QtCore
+
 
 class IconButton(QtGui.QPushButton):
     '''A button with an icon.
