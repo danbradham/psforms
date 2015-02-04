@@ -11,36 +11,35 @@
     :target: https://testpypi.python.org/pypi/apptemplate/
     :alt: Latest Version
 
-============
-PySide Forms
-============
-Forms in PySide without hassle.
+=======
+psforms
+=======
+PySide forms. Hassle-free.
 
 Provides a unified api for all standard PySide input widgets. Making it
-possible to map python dictionaries to forms.
+possible to map python standard types to controls.
 
 ::
 
     import psforms
+    from psforms import Form, Field
 
-    MyForm = psforms.Form(
-        intvalue=('Integer Value', 20),
-        strvalue=('String Value', ['Item A', 'Item B', 'Item C']),
-        boolvalue=('Boolean Value', False),
-        strvalueb=('String Value B', ''),
-    )
+    class MyForm(Form):
+        '''My amazing form, useful in many scenarios.'''
 
-    filled_out = MyForm.as_dialog()
-    if filled_out:
-        print MyForm.get_value()
-
+        title = 'My Form'
+        mapping = psforms.STANDARD
+        int_field = Field('Integer Value', 20)
+        str_field = Field('String Value', ['Item A', 'Item B', 'Item C'])
+        bool_field = Field('Boolean Value', False)
+        strb_field = Field('String Value B', '')
 
 Features
 ========
 
 * Super simple forms
 
-* Unified control api
+* Unified API
 
 * Parent forms to your own window or use them as their own stand alone dialog
 
