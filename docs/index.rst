@@ -1,65 +1,61 @@
-.. image:: https://travis-ci.org/danbradham/apptemplate.svg
-  :target: https://travis-ci.org/danbradham/apptemplate
+.. image:: https://travis-ci.org/danbradham/psforms.svg
+  :target: https://travis-ci.org/danbradham/psforms
   :alt: Build Status
 
 
-.. image:: https://coveralls.io/repos/danbradham/apptemplate/badge.png
-  :target: https://coveralls.io/r/danbradham/apptemplate
+.. image:: https://coveralls.io/repos/danbradham/psforms/badge.png
+  :target: https://coveralls.io/r/danbradham/psforms
   :alt: Coverage Status
 
-.. image:: https://img.shields.io/badge/pypi-0.1.4-brightgreen.svg
-    :target: https://testpypi.python.org/pypi/apptemplate/
+.. image:: https://img.shields.io/badge/pypi-0.1.0-brightgreen.svg
+    :target: https://testpypi.python.org/pypi/psforms/
     :alt: Latest Version
 
-============
-PySide Forms
-============
-Forms in PySide without hassle.
-
-Provides a unified api for all standard PySide input widgets. Making it
-possible to map python dictionaries to forms.
+=======
+psforms
+=======
+Hassle free PySide forms.
 
 ::
 
     import psforms
+    from psforms import Form, Field
 
-    MyForm = psforms.Form(
-        intvalue=('Integer Value', 20),
-        strvalue=('String Value', ['Item A', 'Item B', 'Item C']),
-        boolvalue=('Boolean Value', False),
-        strvalueb=('String Value B', ''),
-    )
 
-    filled_out = MyForm.as_dialog()
-    if filled_out:
-        print MyForm.get_value()
+    class MyForm(Form):
+        '''My amazing form, useful in many scenarios.'''
+
+        title = 'My Form'
+        mapping = psforms.STANDARD
+        int_field = Field('Integer Value', 20)
+        str_field = Field('String Value', ['Item A', 'Item B', 'Item C'])
+        bool_field = Field('Boolean Value', False)
+        strb_field = Field('String Value B', '')
+
+
+    myform_dialog = MyForm.as_dialog()
+    if myform_dialog.accepted:
+        print dialog.get_value()
 
 
 Features
 ========
 
-* Super simple forms
-
-* Unified control api
+* Easy Form creation
 
 * Parent forms to your own window or use them as their own stand alone dialog
+
+* Unified api for all standard PySide input widgets
 
 
 Get psforms
 ===========
 
-PyPa
-----
-psforms is available through the python package index as **psforms**.
-
-::
+You can install psforms using pip::
 
     pip install psforms
 
-Distutils/Setuptools
---------------------
-
-::
+or you can use setuptools::
 
     git clone git@github.com/danbradham/psforms.git
     cd psforms
