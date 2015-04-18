@@ -2,7 +2,7 @@
 '''
 psforms.mappings
 ================
-Mappings from standard python types to psform.controls types.
+Mappings from standard python types to psforms.controls types.
 
 :attr:`STANDARD`
 ----------------
@@ -21,18 +21,8 @@ Maps types to spinboxes
 
  * int   -> controls.SpinBox
  * float -> controls.DoubleSpinBox
- * list  -> controls.TwinDoubleSpinBox
- * tuple -> controls.DoubleSpinBox
-
-These are used with the :class:`ControlFactory` s to produce controls from a
-dictionary like this one::
-
-    controls = {
-        'MySpinBox': ('My Nice SpinBox', 20),
-        'MyComboBox': ('My Nice ComboBox', ['Item A', 'Item B', 'Item C']),
-        'MyCheckBox': ('My Nice CheckBox', False),
-        'MyLineEdit': ('My Nice LineEdit', ''),
-    }
+ * list  -> controls.TwinSpinBox
+ * tuple -> controls.TwinDoubleSpinBox
 '''
 
 from . import controls
@@ -50,6 +40,6 @@ STANDARD = {
 SPIN = {
     int: controls.SpinBox,
     float: controls.DoubleSpinBox,
-    list: controls.TwinDoubleSpinBox,
-    tuple: controls.DoubleSpinBox,
+    list: controls.TwinSpinBox,
+    tuple: controls.TwinDoubleSpinBox,
 }

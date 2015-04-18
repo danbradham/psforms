@@ -50,20 +50,20 @@ class Label(QtGui.QLabel):
         self.clicked.emit()
 
 
-# class RightLabel(Label):
-#     '''Convenience right aligned Label'''
+class RightLabel(Label):
+    '''Convenience right aligned Label'''
 
-#     def __init__(self, *args, **kwargs):
-#         super(RightLabel, self).__init__(*args, **kwargs)
-#         self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+    def __init__(self, *args, **kwargs):
+        super(RightLabel, self).__init__(*args, **kwargs)
+        self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
 
-# class LeftLabel(Label):
-#     '''Convenience left aligned Label'''
+class LeftLabel(Label):
+    '''Convenience left aligned Label'''
 
-#     def __init__(self, *args, **kwargs):
-#         super(LeftLabel, self).__init__(*args, **kwargs)
-#         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+    def __init__(self, *args, **kwargs):
+        super(LeftLabel, self).__init__(*args, **kwargs)
+        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox):
@@ -71,8 +71,9 @@ class DoubleSpinBox(QtGui.QDoubleSpinBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(DoubleSpinBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setFixedHeight(30)
         self.set_value(value)
         self.lineEdit().textEdited.connect(self.emit_changed)
@@ -98,8 +99,9 @@ class TwinDoubleSpinBox(QtGui.QWidget):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(TwinSpinBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setFixedHeight(30)
         g = QtGui.QGridLayout()
@@ -137,8 +139,9 @@ class SpinBox(QtGui.QSpinBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(SpinBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setFixedHeight(30)
         self.set_value(value)
         self.lineEdit().textEdited.connect(self.emit_changed)
@@ -164,8 +167,9 @@ class TwinSpinBox(QtGui.QWidget):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(TwinSpinBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setFixedHeight(30)
         g = QtGui.QGridLayout()
@@ -203,8 +207,9 @@ class ComboBox(QtGui.QComboBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, values, *args, **kwargs):
+    def __init__(self, nice_name, values, *args, **kwargs):
         super(ComboBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setFixedHeight(30)
         self.addItems(values)
         self.activated.connect(self.emit_changed)
@@ -233,8 +238,9 @@ class IntComboBox(QtGui.QComboBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, values, *args, **kwargs):
+    def __init__(self, nice_name, values, *args, **kwargs):
         super(IntComboBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setFixedHeight(30)
         self.addItems([str(i) for i in values])
         self.activated.connect(self.emit_changed)
@@ -260,8 +266,9 @@ class CheckBox(QtGui.QCheckBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.setFixedHeight(30)
         self.set_value(value)
         self.clicked.connect(self.emit_changed)
@@ -287,8 +294,9 @@ class LineEdit(QtGui.QLineEdit):
 
     changed = QtCore.Signal()
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, nice_name, value, *args, **kwargs):
         super(LineEdit, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
         self.set_value(value)
 
     def emit_changed(self, *args, **kwargs):
