@@ -16,7 +16,6 @@ Fields
 
 .. automodule:: psforms.fields
     :members:
-    :undoc-members:
 
 Controls
 --------
@@ -29,4 +28,6 @@ Exceptions
 ----------
 
 .. automodule:: psforms.exc
+    :members:
+    :undoc-members:
 
