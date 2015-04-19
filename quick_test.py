@@ -3,23 +3,36 @@ import sys
 from pprint import pprint
 from functools import partial
 from PySide import QtGui, QtCore
-from psforms import Form, Field
+import psforms
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+class MyForm(psforms.Form):
+    title = 'My Form'
+    int_field = psforms.IntField('Integer', range=(-100, 100), default=20)
+    str_field = psforms.StringOptionField('StringA', options=['A', 'B', 'C'])
+    bool_field = psforms.BoolField('Boolean', default=False)
+    strb_field = psforms.StringField('StringB', default='B')
+    int2_field = psforms.Int2Field('Integer2')
+    float2_field = psforms.Float2Field('Float2')
+    int_opt_field = psforms.IntOptionField('Integer3', options=[0, 1, 2])
+
+
+def form_accepted(form):
+    print 'Form Accepted...\n'
+    pprint(form.get_value())
+
+
+def form_rejected(form):
+    print 'Form Rejected...'
 
 
 def print_values(form):
     pprint(form.get_value())
 
+
 def test_widget():
-
-    class MyForm(Form):
-        title = 'My Form'
-        int_field = Field('Integer Value', 20)
-        str_field = Field('String Value', ['Item A', 'Item B', 'Item C'])
-        bool_field = Field('Boolean Value', False)
-        strb_field = Field('String Value B', '')
-
     app = QtGui.QApplication(sys.argv)
 
     myform = MyForm.as_widget()
@@ -36,5 +49,24 @@ def test_widget():
     sys.exit(app.exec_())
 
 
+def test_modal_dialog():
+    app = QtGui.QApplication(sys.argv)
+    myform = MyForm.as_dialog()
+    if myform.exec_():
+        pprint(myform.get_value())
+    sys.exit(app.exec_())
+
+
+def test_modeless_dialog():
+
+    app = QtGui.QApplication(sys.argv)
+    myform = MyForm.as_dialog()
+    myform.accepted.connect(partial(form_accepted, myform))
+    myform.rejected.connect(partial(form_rejected, myform))
+    myform.setModal(True)
+    myform.show()
+    sys.exit(app.exec_())
+
+
 if __name__ == '__main__':
-    test_widget()
+    test_modal_dialog()

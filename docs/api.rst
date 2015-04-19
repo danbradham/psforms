@@ -4,6 +4,20 @@
 API Documentation
 =================
 
+Form
+----
+
+.. automodule:: psforms.form
+    :members:
+    :undoc-members:
+
+Fields
+------
+
+.. automodule:: psforms.fields
+    :members:
+    :undoc-members:
+
 Controls
 --------
 
@@ -11,7 +25,8 @@ Controls
     :members:
     :undoc-members:
 
-Mappings
---------
+Exceptions
+----------
 
-.. automodule:: psforms.mappings
+.. automodule:: psforms.exc
+

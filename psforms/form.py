@@ -1,18 +1,57 @@
 # -*- coding: utf-8 -*-
 import math
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 from operator import attrgetter
 from PySide import QtGui, QtCore
 
 from .controls import RightLabel, CheckBox
-from .mappings import STANDARD
-from .field import Field
+from .fields import Field
 from .exc import FieldNotFound
 
 
-class FormWidget(QtGui.QWidget):
+class FormData(dict):
+    '''Dictionary in which attribute lookup is redirected to itself access.
+    Simplest possible implementation. Returned by get_value calls to
+    :class:`Dialog`, :class:`Widget` and :class:`GroupBox`
+    '''
+
+    __getattr__ = dict.__getitem__
+
+
+class Dialog(QtGui.QDialog):
+
+    def __init__(self, widget, *args, **kwargs):
+        super(Dialog, self).__init__(*args, **kwargs)
+
+        self.widget = widget
+        self.cancel_button = QtGui.QPushButton('&cancel')
+        self.accept_button = QtGui.QPushButton('&accept')
+        self.cancel_button.clicked.connect(self.reject)
+        self.accept_button.clicked.connect(self.accept)
+
+        self.layout = QtGui.QGridLayout()
+        self.layout.setRowStretch(0, 1)
+        self.layout.setColumnStretch(0, 1)
+        self.setLayout(self.layout)
+
+        self.layout.addWidget(self.widget, 0, 0, 1, 3)
+        self.layout.addWidget(self.cancel_button, 1, 1)
+        self.layout.addWidget(self.accept_button, 1, 2)
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.widget, attr)
+        except AttributeError:
+            raise AttributeError('Dialog has no attr: {}'.format(attr))
+
+
+class Widget(QtGui.QWidget):
 
     def __init__(self, controls, columns=1, labeled=True, parent=None):
-        super(FormWidget, self).__init__(parent)
+        super(Widget, self).__init__(parent)
 
         self.setObjectName('Form')
         self.controls = controls
@@ -30,7 +69,7 @@ class FormWidget(QtGui.QWidget):
             self.add_control(name, control)
 
     def get_value(self):
-        form_data = {}
+        form_data = FormData()
         for name, control in self.controls.iteritems():
             form_data[name] = control.get_value()
 
@@ -63,26 +102,23 @@ class FormWidget(QtGui.QWidget):
 
 class Form(object):
 
-    title = ''
-    mapping = STANDARD
+    title = None
 
     @classmethod
     def _fields(cls):
         cls_fields = []
         for name, attr in cls.__dict__.iteritems():
-            if isinstance(attr, Field):
+            if issubclass(attr.__class__, Field):
                 cls_fields.append((name, attr))
-
         return sorted(cls_fields, key=lambda x: x[1]._order)
 
     @classmethod
     def _create_controls(cls):
-        controls = {}
-        print cls._fields()
+        controls = OrderedDict()
 
         for name, field in cls._fields():
             typ = type(field.default)
-            control = cls.mapping[typ](field.name, field.default)
+            control = field.create()
             control.setObjectName(name)
             controls[name] = control
 
@@ -91,5 +127,22 @@ class Form(object):
     @classmethod
     def as_widget(cls, columns=1, labeled=True, parent=None):
 
-        widget = FormWidget(cls._create_controls())
+        widget = Widget(
+            controls=cls._create_controls(),
+            columns=columns,
+            labeled=labeled,
+            parent=parent)
         return widget
+
+
+    @classmethod
+    def as_dialog(cls, columns=1, labeled=True, parent=None):
+
+        widget = Widget(
+            controls=cls._create_controls(),
+            columns=columns,
+            labeled=labeled,
+            parent=parent)
+        dialog = Dialog(widget)
+        dialog.setWindowTitle(cls.title)
+        return Dialog(widget)

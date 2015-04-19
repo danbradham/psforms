@@ -4,12 +4,13 @@ __title__ = 'psforms'
 __author__ = 'Dan Bradham'
 __email__ = 'danielbradham@gmail.com'
 __url__ = 'http://github.com/danbradham/apptemplate.git'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __license__ = 'MIT'
 __description__ = '''psforms'''
 
 
 from . import controls
-from .field import Field
-from .form import Form
-from .exc import *
+from .fields import (BoolField, IntField, Int2Field, FloatField, Float2Field,
+                     StringField, StringOptionField, IntOptionField)
+from .form import (Form, Dialog, Widget)
+from .exc import (FormNotInstantiated, FieldNotFound, FieldNotInstantiated)

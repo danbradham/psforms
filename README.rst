@@ -1,16 +1,3 @@
-.. image:: https://travis-ci.org/danbradham/psforms.svg
-  :target: https://travis-ci.org/danbradham/psforms
-  :alt: Build Status
-
-
-.. image:: https://coveralls.io/repos/danbradham/psforms/badge.png
-  :target: https://coveralls.io/r/danbradham/psforms
-  :alt: Coverage Status
-
-.. image:: https://img.shields.io/badge/pypi-0.1.0-brightgreen.svg
-    :target: https://testpypi.python.org/pypi/psforms/
-    :alt: Latest Version
-
 =======
 psforms
 =======

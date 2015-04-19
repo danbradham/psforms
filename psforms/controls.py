@@ -71,11 +71,10 @@ class DoubleSpinBox(QtGui.QDoubleSpinBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
+    def __init__(self, nice_name, *args, **kwargs):
         super(DoubleSpinBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.set_value(value)
         self.lineEdit().textEdited.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -99,8 +98,8 @@ class TwinDoubleSpinBox(QtGui.QWidget):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
-        super(TwinSpinBox, self).__init__(*args, **kwargs)
+    def __init__(self, nice_name, *args, **kwargs):
+        super(TwinDoubleSpinBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setFixedHeight(30)
@@ -108,8 +107,8 @@ class TwinDoubleSpinBox(QtGui.QWidget):
         g.setSpacing(20)
         g.setContentsMargins(0, 0, 0, 0)
         self.setLayout(g)
-        self.left_box = DoubleSpinBox(value[0])
-        self.right_box = DoubleSpinBox(value[1])
+        self.left_box = DoubleSpinBox('subcontrol')
+        self.right_box = DoubleSpinBox('subcontrol')
         g.addWidget(self.left_box, 0, 0)
         g.addWidget(self.right_box, 0, 1)
         self.left_box.lineEdit().textEdited.connect(self.emit_changed)
@@ -139,11 +138,10 @@ class SpinBox(QtGui.QSpinBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
+    def __init__(self, nice_name, *args, **kwargs):
         super(SpinBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.set_value(value)
         self.lineEdit().textEdited.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -167,7 +165,7 @@ class TwinSpinBox(QtGui.QWidget):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
+    def __init__(self, nice_name, *args, **kwargs):
         super(TwinSpinBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -176,8 +174,8 @@ class TwinSpinBox(QtGui.QWidget):
         g.setSpacing(20)
         g.setContentsMargins(0, 0, 0, 0)
         self.setLayout(g)
-        self.left_box = SpinBox(value[0])
-        self.right_box = SpinBox(value[1])
+        self.left_box = SpinBox('subcontrol')
+        self.right_box = SpinBox('subcontrol')
         g.addWidget(self.left_box, 0, 0)
         g.addWidget(self.right_box, 0, 1)
         self.left_box.lineEdit().textEdited.connect(self.emit_changed)
@@ -207,11 +205,11 @@ class ComboBox(QtGui.QComboBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, values, *args, **kwargs):
+    def __init__(self, nice_name, options, *args, **kwargs):
         super(ComboBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.addItems(values)
+        self.addItems(options)
         self.activated.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -238,11 +236,11 @@ class IntComboBox(QtGui.QComboBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, values, *args, **kwargs):
+    def __init__(self, nice_name, options, *args, **kwargs):
         super(IntComboBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.addItems([str(i) for i in values])
+        self.addItems([str(i) for i in options])
         self.activated.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -266,11 +264,10 @@ class CheckBox(QtGui.QCheckBox):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
+    def __init__(self, nice_name, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.set_value(value)
         self.clicked.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -294,10 +291,9 @@ class LineEdit(QtGui.QLineEdit):
 
     changed = QtCore.Signal()
 
-    def __init__(self, nice_name, value, *args, **kwargs):
+    def __init__(self, nice_name, *args, **kwargs):
         super(LineEdit, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
-        self.set_value(value)
 
     def emit_changed(self, *args, **kwargs):
         self.changed.emit()
