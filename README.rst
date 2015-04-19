@@ -1,3 +1,7 @@
+.. image:: https://readthedocs.org/projects/psforms/badge/?version=latest
+    :target: https://readthedocs.org/projects/psforms/?badge=latest
+    :alt: Documentation Status
+
 =======
 psforms
 =======
@@ -5,23 +9,22 @@ Hassle free PySide forms.
 
 ::
 
-    import psforms
-    from psforms import Form, Field
+    from psforms import (Form, IntField, StringField,
+                         StringOptionField, BoolField)
 
 
     class MyForm(Form):
         '''My amazing form, useful in many scenarios.'''
 
         title = 'My Form'
-        mapping = psforms.STANDARD
-        int_field = Field('Integer Value', 20)
-        str_field = Field('String Value', ['Item A', 'Item B', 'Item C'])
-        bool_field = Field('Boolean Value', False)
-        strb_field = Field('String Value B', '')
+        int_field = IntField('Integer Value')
+        str_field = StringOptionField('String Value', options=['A', 'B', 'C'])
+        bool_field = BoolField('Boolean Value')
+        strb_field = StringField('String Value B')
 
 
     myform_dialog = MyForm.as_dialog()
-    if myform_dialog.accepted:
+    if myform_dialog.exec_():
         print dialog.get_value()
 
 

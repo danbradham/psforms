@@ -1,3 +1,7 @@
+.. image:: https://readthedocs.org/projects/psforms/badge/?version=latest
+    :target: https://readthedocs.org/projects/psforms/?badge=latest
+    :alt: Documentation Status
+
 =======
 psforms
 =======
