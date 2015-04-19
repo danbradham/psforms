@@ -1,0 +1,220 @@
+QDialog,
+QWidget[form='true'] {
+    background: rgb(68, 68, 68);
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+QLabel{
+    font: 12pt "Arial";
+    color: rgb(215, 215, 215);
+}
+
+QLabel[clickable='true']:hover{
+    font: 12pt "Arial";
+    color: rgb(255, 255, 255);
+}
+
+QPushButton{
+    background: rgb(100, 100, 100);
+    border: 0;
+    padding: 0 10 0 10;
+    height: 30;
+    font: 10pt "Arial";
+    color: rgb(235, 235, 235);
+    border-bottom: 3px solid rgb(45, 45, 45);
+}
+
+QPushButton:hover{
+    background: rgb(125, 125, 125);
+}
+
+QPushButton[flat='true']{
+    background: rgb(0, 0, 0, 0);
+    border: 0;
+}
+
+QPushButton:pressed{
+    margin-top: 3;
+    border-bottom: 0px;
+}
+
+QComboBox {
+    font: 10pt "Arial";
+    background: rgb(45, 45, 45);
+    color: rgb(235, 235, 235);
+    border: none;
+    outline: none;
+    padding-left: 10;
+}
+
+QComboBox::drop-down{
+    margin-top: 12px;
+    border-top: 6px solid rgb(145,145,145);
+    border-right: 6px solid rgb(255,255,255,0);
+    border-left: 6px solid rgb(255,255,255,0);
+    margin-left: 2px;
+    margin-bottom: -1px;
+    margin-right: 2px;
+    border-bottom: 0px solid rgb(235,235,235, 0);
+    background: rgb(45, 45, 45);
+}
+
+QComboBox QAbstractItemView{
+    border: none;
+    outline: none;
+    background-color: rgb(100, 100, 100);
+    color: rgb(235, 235, 235);
+    selection-background-color: rgb(125, 125, 125);
+    selection-color:rgb(255, 255, 255);
+}
+
+QCheckBox{
+    color: rgb(235, 235, 235);
+    font: 8pt "Arial";
+}
+
+QCheckBox::indicator{
+    border: 5px solid rgb(45, 45, 45);
+    background: rgb(45, 45, 45);
+}
+
+QCheckBox::indicator:checked{
+    border: 5px solid rgb(45, 45, 45);
+    background: rgb(235, 235, 235);
+}
+
+QStatusBar{
+    background: rgb(40, 40, 40)
+}
+
+QSpinBox,
+QDoubleSpinBox {
+    font: 10pt "Arial";
+    background: rgb(45, 45, 45);
+    color: rgb(235, 235, 235);
+    padding-left: 10;
+}
+
+QSpinBox:disabled,
+QDoubleSpinBox:disabled {
+    background: rgb(55, 55, 55);
+    color: rgb(235, 235, 235);
+    font: 10pt "Arial";
+    padding-left: 10;
+}
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right; /* position at the top right corner */
+
+    margin-bottom: 2px;
+    border-bottom: 4px solid rgb(145,145,145);
+    border-right: 4px solid rgb(255,255,255,0);
+    border-left: 4px solid rgb(255,255,255,0);
+    margin-left: 4px;
+    margin-top: -2px;
+    margin-right: 4px;
+    border-top: 0px solid rgb(235,235,235, 0);
+    background: rgb(45, 45, 45);
+}
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right; /* position at bottom right corner */
+
+    margin-top: 2px;
+    border-top: 4px solid rgb(145,145,145);
+    border-right: 4px solid rgb(255,255,255,0);
+    border-left: 4px solid rgb(255,255,255,0);
+    margin-left: 4px;
+    margin-bottom: -2px;
+    margin-right: 4px;
+    border-bottom: 0px solid rgb(235,235,235, 0);
+    background: rgb(45, 45, 45);
+}
+
+QSpinBox::up-button:disabled,
+QDoubleSpinBox::up-button:disabled {
+    background: rgb(55, 55, 55);
+}
+
+QSpinBox::down-button:disabled,
+QDoubleSpinBox::down-button:disabled {
+    background: rgb(55, 55, 55);
+}
+
+QLineEdit{
+    background: rgb(45, 45, 45);
+    color: white;
+    height: 30;
+    font: 10pt "Arial";
+    border: 0;
+    padding: 0;
+}
+
+
+QLineEdit:focus{
+    background: rgb(45, 45, 45);
+    height: 30;
+    color: rgb(235,235,235);
+    font: 10pt "Arial";
+    border: 0;
+    padding: 0;
+}
+
+QLineEdit:disabled{
+    background: rgb(55, 55, 55);
+    color: rgb(200, 200, 200);
+    height: 30;
+    font: 10pt "Arial";
+    border-top: 0;
+    padding: 0;
+}
+
+QGroupBox{
+    border: 1px solid rgb(45, 45, 45);
+    color: rgb(235,235,235);
+    font: 12pt "Arial";
+    margin-top: 1ex;
+}
+
+QGroupBox::title{
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 3px;
+}
+
+QGroupBox::title:hover{
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 3px;
+    color: white;
+}
+
+QGroupBox[unfolded='false']::indicator {
+    width: 12px;
+    height: 12px;
+    image: url(:icons/plus.png);
+}
+
+QGroupBox[unfolded='false']::indicator::hover {
+    width: 12px;
+    height: 12px;
+    image: url(:icons/plus_hover.png);
+}
+
+QGroupBox[unfolded='true']::indicator {
+    width: 12px;
+    height: 12px;
+    image: url(:icons/minus.png);
+}
+
+QGroupBox[unfolded='true']::indicator::hover {
+    width: 12px;
+    height: 12px;
+    image: url(:icons/minus_hover.png);
+}

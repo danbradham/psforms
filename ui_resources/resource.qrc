@@ -1,0 +1,12 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>icons/browse_icon.png</file>
+    <file>icons/browse_icon_hover.png</file>
+    <file>icons/refresh.png</file>
+    <file>icons/refresh_pressed.png</file>
+    <file>icons/plus.png</file>
+    <file>icons/plus_hover.png</file>
+    <file>icons/minus.png</file>
+    <file>icons/minus_hover.png</file>
+</qresource>
+</RCC>

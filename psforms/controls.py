@@ -44,6 +44,7 @@ class Label(QtGui.QLabel):
 
     def __init__(self, *args, **kwargs):
         super(Label, self).__init__(*args, **kwargs)
+        self.setProperty('clickable', True)
         self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
@@ -54,25 +55,31 @@ class RightLabel(QtGui.QLabel):
     '''Convenience right aligned Label'''
 
     clicked = QtCore.Signal()
+
     def __init__(self, *args, **kwargs):
         super(RightLabel, self).__init__(*args, **kwargs)
+        self.setProperty('clickable', True)
         self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
         self.clicked.emit()
 
+
 class LeftLabel(QtGui.QLabel):
     '''Convenience left aligned Label'''
 
     clicked = QtCore.Signal()
+
     def __init__(self, *args, **kwargs):
         super(LeftLabel, self).__init__(*args, **kwargs)
+        self.setProperty('clickable', True)
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
         self.clicked.emit()
+
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox):
     '''Wraps :class:`QtGui.QDoubleSpinBox`'''
@@ -275,7 +282,8 @@ class CheckBox(QtGui.QCheckBox):
     def __init__(self, nice_name, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
-        self.setFixedHeight(30)
+        self.setFixedHeight(20)
+        self.setFixedWidth(20)
         self.clicked.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):

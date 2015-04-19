@@ -24,7 +24,7 @@ packages = (
 
 package_data = {
     '': ['LICENSE', 'README.rst'],
-    'psforms': [],
+    'psforms': ['style.css'],
 }
 
 with open("README.rst") as f:
