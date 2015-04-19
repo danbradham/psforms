@@ -50,21 +50,29 @@ class Label(QtGui.QLabel):
         self.clicked.emit()
 
 
-class RightLabel(Label):
+class RightLabel(QtGui.QLabel):
     '''Convenience right aligned Label'''
 
+    clicked = QtCore.Signal()
     def __init__(self, *args, **kwargs):
         super(RightLabel, self).__init__(*args, **kwargs)
         self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.setFixedHeight(30)
 
+    def mousePressEvent(self, event):
+        self.clicked.emit()
 
-class LeftLabel(Label):
+class LeftLabel(QtGui.QLabel):
     '''Convenience left aligned Label'''
 
+    clicked = QtCore.Signal()
     def __init__(self, *args, **kwargs):
         super(LeftLabel, self).__init__(*args, **kwargs)
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.setFixedHeight(30)
 
+    def mousePressEvent(self, event):
+        self.clicked.emit()
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox):
     '''Wraps :class:`QtGui.QDoubleSpinBox`'''
