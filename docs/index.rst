@@ -3,8 +3,9 @@
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/pypi/v/psforms.svg?style=flat-square
-    :target: http://pypi.python.org/psforms
+    :target: http://pypi.python.org/pypi/psforms
     :alt: Latest Version
+
 =======
 psforms
 =======
