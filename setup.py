@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
 import os
 import sys
-import psforms
 
 if sys.argv[-1] == 'cheeseit!':
     os.system('python setup.py sdist upload')
@@ -17,31 +13,23 @@ elif sys.argv[-1] == 'testit!':
     os.system('python setup.py sdist upload -r test')
     sys.exit()
 
-
-packages = (
-    'psforms',
-)
-
-package_data = {
-    '': ['LICENSE', 'README.rst'],
-    'psforms': ['style.css'],
-}
-
 with open("README.rst") as f:
     readme = f.read()
 
 setup(
-    name=psforms.__title__,
-    version=psforms.__version__,
-    description=psforms.__description__,
+    name='psforms',
+    version='0.2.0',
+    description='Hassle free PySide forms.',
     long_description=readme,
-    author=psforms.__author__,
-    author_email=psforms.__email__,
-    url=psforms.__url__,
-    license=psforms.__version__,
-    packages=packages,
-    package_data=package_data,
-    package_dir={'psforms': 'psforms'},
+    author='Dan Bradham',
+    author_email='danielbradham@gmail.com',
+    url='http://github.com/danbradham/psforms.git',
+    license='MIT',
+    packages=find_packages(),
+    package_data={
+        '': ['LICENSE', 'README.rst'],
+        'psforms': ['style.css']
+    },
     include_package_data=True,
     classifiers=(
         "Development Status :: 3 - Alpha",

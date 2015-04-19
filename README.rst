@@ -1,9 +1,9 @@
-.. image:: https://readthedocs.org/projects/psforms/badge/?version=latest?style=flat-square
-    :target: https://readthedocs.org/projects/psforms/?badge=latest
+.. image:: https://readthedocs.org/projects/psforms/badge/?style=flat-square
+    :target: http://psforms.readthedocs.org/en/latest/
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/pypi/v/psforms.svg?style=flat-square
-    :target: https://pypi.python.org/psforms
+    :target: http://pypi.python.org/psforms
     :alt: Latest Version
 
 =======

@@ -3,10 +3,10 @@
 __title__ = 'psforms'
 __author__ = 'Dan Bradham'
 __email__ = 'danielbradham@gmail.com'
-__url__ = 'http://github.com/danbradham/apptemplate.git'
+__url__ = 'http://github.com/danbradham/psforms.git'
 __version__ = '0.2.0'
 __license__ = 'MIT'
-__description__ = '''psforms'''
+__description__ = 'Hassle free PySide forms.'
 
 import os
 
