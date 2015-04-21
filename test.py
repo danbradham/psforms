@@ -1,8 +1,10 @@
 import signal
 import sys
+import os
 from pprint import pprint
 from functools import partial
 from PySide import QtGui, QtCore
+from pslive import LiveLinker
 import psforms
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -69,6 +71,8 @@ def test_stylesheet():
     w.setProperty('form', True) # Add form property to top-level widget
     w.setStyleSheet(psforms.stylesheet) # Apply psforms.stylesheet
 
+    LiveLinker(path=os.path.abspath('psforms/style.css'), parent=w)
+
     sys.exit(app.exec_())
 
 
@@ -123,7 +127,6 @@ def test_group():
     l.addWidget(print_button, 1, 1)
     w.setLayout(l)
     w.show()
-    w.setStyleSheet(psforms.stylesheet)
 
     sys.exit(app.exec_())
 
