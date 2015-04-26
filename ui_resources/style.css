@@ -5,20 +5,7 @@ QWidget[form='true'] {
     margin: 0;
     padding: 0;
 }
-QWidget[header='true'] {
-    background: rgb(45, 45, 45);
-    border: 0;
-    margin: 0;
-    padding: 0;
-}
-QLabel[title='true'] {
-    color: white;
-    font: 24pt "Arial";
-}
-QLabel[description='true'] {
-    color: white;
-    font: 12pt "Arial";
-}
+
 QLabel{
     color: rgb(45, 45, 45);
     font: 10pt "Arial";

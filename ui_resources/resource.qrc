@@ -1,12 +1,15 @@
 <!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>icons/browse_icon.png</file>
-    <file>icons/browse_icon_hover.png</file>
-    <file>icons/refresh.png</file>
-    <file>icons/refresh_pressed.png</file>
-    <file>icons/plus.png</file>
-    <file>icons/plus_hover.png</file>
-    <file>icons/minus.png</file>
-    <file>icons/minus_hover.png</file>
+<qresource prefix="/">
+    <file alias="style">style.css</file>
+</qresource>
+<qresource prefix="/icons">>
+    <file alias="browse">browse_icon.png</file>
+    <file alias="browse_hover">browse_icon_hover.png</file>
+    <file alias="refresh">refresh.png</file>
+    <file alias="refresh_pressed">refresh_pressed.png</file>
+    <file alias="plus">plus.png</file>
+    <file alias="plus_hover">plus_hover.png</file>
+    <file alias="minus">minus.png</file>
+    <file alias="minus_hover">minus_hover.png</file>
 </qresource>
 </RCC>

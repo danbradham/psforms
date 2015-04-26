@@ -12,10 +12,12 @@ import os
 
 from . import resource
 from . import controls
+from . import widgets
 from .exc import (FormNotInstantiated, FieldNotFound, FieldNotInstantiated)
 from .fields import (BoolField, IntField, Int2Field, FloatField, Float2Field,
-                     StringField, StringOptionField, IntOptionField)
-from .form import (Form, Dialog, Widget)
+                     StringField, StringOptionField, IntOptionField,
+                     FieldGroup)
+from .form import Form
 
 with open(os.path.join(os.path.dirname(__file__), 'style.css')) as f:
     stylesheet = f.read()

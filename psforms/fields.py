@@ -1,24 +1,60 @@
 # -*- coding: utf-8 -*-
 from .exc import FieldNotInstantiated
 from . import controls
+from . import widgets
 
-class Field(object):
+
+class Counted(object):
+    '''Maintains the order of creation for instances/subclasses'''
+
+    _count = 0
+
+    def __init__(self):
+        Counted._count += 1
+        self._order = self._count
+
+
+class FieldGroup(Counted):
+    '''Produces a group of fields arrayed in a number of columns.'''
+
+    group_cls = widgets.Group
+
+    def __init__(self, name, columns=1):
+        super(FieldGroup, self).__init__()
+
+        self.name = name
+        self.columns = columns
+
+    def create(self):
+        group = self.group_cls(self.name, self.columns)
+        return group
+
+
+class Field(Counted):
     ''':class:`Form` calls the :meth:`create` to retrieve an appropriate
     control.
 
     :param name: Nice name of the field (str)
+    :param labeled: Field Control has label (bool)
+    :param label_on_top: Label appears on top of the field control (bool)
+    :param group: FieldGroup the control belongs in
+    :param on_left: Field control will appear on the left of group (bool)
+    :param on_right: Field control will appear on the right of group (bool)
     :param default: Default value (str)
     '''
 
-    _count = 0
     control_cls = None
 
-    def __init__(self, name, default=None):
-        #Maintain order of declaration
-        Field._count += 1
-        self._order = self._count
+    def __init__(self, name, labeled=True, label_on_top=True,
+                 group=None, on_left=None, on_right=None, default=None):
+        super(Field, self).__init__()
 
         self.name = name
+        self.labeled = labeled
+        self.label_on_top = label_on_top
+        self.group = group
+        self.on_left = on_left
+        self.on_right = on_right
         self.default = default
 
     def __repr__(self):
@@ -41,6 +77,8 @@ class BoolField(Field):
 
     control_cls = controls.CheckBox
 
+    def __init__(self, name, label_on_top=False, **kwargs):
+        super(BoolField, self).__init__(name, label_on_top=label_on_top, **kwargs)
 
 class StringField(Field):
     '''Represented by a :class:`LineEdit` control.
@@ -54,8 +92,9 @@ class StringField(Field):
 
 class NumberField(Field):
 
-    def __init__(self, name, range=None, default=None):
-        super(NumberField, self).__init__(name, default)
+    def __init__(self, name, range=None, **kwargs):
+
+        super(NumberField, self).__init__(name, **kwargs)
         self.range = range
 
     def create(self):
@@ -91,8 +130,8 @@ class FloatField(NumberField):
 
 class Number2Field(Field):
 
-    def __init__(self, name, range1=None, range2=None, default=None):
-        super(Number2Field, self).__init__(name, default)
+    def __init__(self, name, range1=None, range2=None, **kwargs):
+        super(Number2Field, self).__init__(name, **kwargs)
         self.range1 = range1
         self.range2 = range2
 
@@ -135,8 +174,8 @@ class Float2Field(Number2Field):
 
 class OptionField(Field):
 
-    def __init__(self, name, options, default=None):
-        super(OptionField, self).__init__(name, default)
+    def __init__(self, name, options, **kwargs):
+        super(OptionField, self).__init__(name, **kwargs)
         self.options = options
 
     def create(self):

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import math
 try:
     from collections import OrderedDict
 except ImportError:
@@ -7,147 +6,18 @@ except ImportError:
 from operator import attrgetter
 from PySide import QtGui, QtCore
 
-from .controls import RightLabel, CheckBox
-from .fields import Field
+from .controls import LabeledControl
+from .fields import Field, FieldGroup
 from .exc import FieldNotFound
-
-
-class FormData(dict):
-    '''Dictionary in which attribute lookup is redirected to itself access.
-    Simplest possible implementation. Returned by get_value calls to
-    :class:`Dialog`, :class:`Widget` and :class:`GroupBox`
-    '''
-
-    __getattr__ = dict.__getitem__
-
-
-class Widget(QtGui.QWidget):
-
-    def __init__(self, controls, columns=1, labeled=True, parent=None):
-        super(Widget, self).__init__(parent)
-
-        self.setProperty('form', True)
-        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        self.controls = controls
-        self.columns = columns
-        self.labeled = labeled
-        self.parent = parent
-        self._count = 0
-
-        self.layout = QtGui.QGridLayout()
-        self.setLayout(self.layout)
-        self.layout.setRowStretch(1000, 1)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-
-        for name, control in self.controls.iteritems():
-            self.add_control(name, control)
-
-    def get_value(self):
-        form_data = FormData()
-        for name, control in self.controls.iteritems():
-            form_data[name] = control.get_value()
-
-        return form_data
-
-    def set_value(self, **data):
-        for name, value in data.iteritems():
-            try:
-                self.controls[name].set_value(value)
-            except KeyError:
-                raise FieldNotFound(name + ' does not exist')
-
-    def add_control(self, name, control):
-        column = (self._count % self.columns) * 2
-        row = math.floor(self._count / self.columns)
-
-        label = RightLabel(control.nice_name)
-        label.setObjectName(name + '_label')
-        self.layout.addWidget(label, row, column)
-        self.layout.addWidget(control, row, column + 1)
-
-        if isinstance(control, CheckBox):
-            label.clicked.connect(control.toggle)
-            label.setObjectName('clickable')
-
-        setattr(self, name, control)
-
-        self._count += 1
-
-
-class Dialog(QtGui.QDialog):
-
-    def __init__(self, widget, *args, **kwargs):
-        super(Dialog, self).__init__(*args, **kwargs)
-
-        self.widget = widget
-        self.cancel_button = QtGui.QPushButton('&cancel')
-        self.accept_button = QtGui.QPushButton('&accept')
-        self.cancel_button.clicked.connect(self.reject)
-        self.accept_button.clicked.connect(self.accept)
-
-        self.layout = QtGui.QGridLayout()
-        self.layout.setRowStretch(0, 1)
-        self.layout.setColumnStretch(0, 1)
-        self.setLayout(self.layout)
-
-        self.layout.addWidget(self.widget, 0, 0, 1, 3)
-        self.layout.addWidget(self.cancel_button, 1, 1)
-        self.layout.addWidget(self.accept_button, 1, 2)
-
-    def __getattr__(self, attr):
-        try:
-            return getattr(self.widget, attr)
-        except AttributeError:
-            raise AttributeError('Dialog has no attr: {}'.format(attr))
-
-
-class Group(QtGui.QGroupBox):
-
-    def __init__(self, title, widget, parent=None):
-        super(Group, self).__init__(title, parent=parent)
-
-        self.widget = widget
-
-        self.layout = QtGui.QGridLayout()
-        self.setLayout(self.layout)
-        self.layout.setRowStretch(1000, 1)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.addWidget(self.widget, 0, 0)
-
-        self.unfolded = True
-        self.setProperty('unfolded', True)
-        self.setCheckable(True)
-        self.setChecked(True)
-        self.clicked.connect(self.fold)
-
-    def __getattr__(self, attr):
-        try:
-            return getattr(self.widget, attr)
-        except AttributeError:
-            raise AttributeError('Dialog has no attr: {}'.format(attr))
-
-    def fold(self):
-        '''Toggle visibility for all widgets'''
-        self.setChecked(True)
-        self.unfolded = not self.unfolded
-
-        num_children = self.layout.count()
-        for i in xrange(num_children):
-            c = self.layout.itemAt(i).widget()
-            c.setVisible(self.unfolded)
-
-        for name, control in self.widget.controls.iteritems():
-            control.setEnabled(True) # Controls are always enabled
-
-        self.setProperty('unfolded', not self.property('unfolded'))
-        self.style().unpolish(self)
-        self.style().polish(self)
-        self.update()
+from .widgets import Dialog, Group, Header, Widget
 
 
 class Form(object):
 
     title = None
+    description = None
+    icon = None
+    header = False
 
     @classmethod
     def _fields(cls):
@@ -158,46 +28,75 @@ class Form(object):
         return sorted(cls_fields, key=lambda x: x[1]._order)
 
     @classmethod
+    def _groups(cls):
+        cls_groups = []
+        for name, attr in cls.__dict__.iteritems():
+            if issubclass(attr.__class__, FieldGroup):
+                cls_groups.append((name, attr))
+        return sorted(cls_groups, key=lambda x: x[1]._order)
+
+    @classmethod
+    def _create_groups(cls):
+        groups = OrderedDict()
+
+        field_groups = cls._groups()
+        if not field_groups:
+            groups['main'] = FieldGroup(name='main').create()
+
+        for name, group in cls._groups():
+            group = group.create()
+            groups[name] = group
+
+        return groups
+
+    @classmethod
     def _create_controls(cls):
         controls = OrderedDict()
 
         for name, field in cls._fields():
-            typ = type(field.default)
             control = field.create()
             control.setObjectName(name)
+            if field.labeled:
+                control = LabeledControl(control, field.label_on_top)
             controls[name] = control
 
         return controls
 
     @classmethod
-    def as_widget(cls, columns=1, labeled=True, parent=None):
+    def _create_widget(cls, parent=None):
+        widget = Widget(parent=parent)
 
-        widget = Widget(
-            controls=cls._create_controls(),
-            columns=columns,
-            labeled=labeled,
-            parent=parent)
+        if cls.header:
+            widget.add_header(cls.title, cls.description, cls.icon)
+
+        groups = cls._create_groups()
+        controls = cls._create_controls()
+
+        if len(groups) == 1:
+            for name, control in controls.iteritems():
+                groups['main'].add_control(name, control)
+        else:
+            groups_by_name = dict((g.name, g) for g in groups.values())
+            for name, control in controls.iteritems():
+                field = getattr(cls, name)
+                group = groups_by_name[field.group.name]
+                if field.group:
+                    group.add_control(name, control)
+
+        for name, group in groups.iteritems():
+            widget.add_group(name, group)
         return widget
 
     @classmethod
-    def as_dialog(cls, columns=1, labeled=True, parent=None):
+    def as_widget(cls, parent=None):
 
-        widget = Widget(
-            controls=cls._create_controls(),
-            columns=columns,
-            labeled=labeled,
-            parent=parent)
-        dialog = Dialog(widget)
-        dialog.setWindowTitle(cls.title)
-        return dialog
+        widget = cls._create_widget(parent=parent)
+        return widget
 
     @classmethod
-    def as_group(cls, columns=1, labeled=True, parent=None):
+    def as_dialog(cls, parent=None):
 
-        widget = Widget(
-            controls=cls._create_controls(),
-            columns=columns,
-            labeled=labeled,
-            parent=parent)
-        group = Group(title=cls.title, widget=widget, parent=parent)
-        return group
+        widget = cls._create_widget()
+        dialog = Dialog(widget, parent=parent)
+        dialog.setWindowTitle(cls.title)
+        return dialog

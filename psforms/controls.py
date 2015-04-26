@@ -13,6 +13,37 @@ whenever the value is changed by user interaction.
 from PySide import QtGui, QtCore
 
 
+class LabeledControl(QtGui.QWidget):
+    '''A composite widget with a label and a control.'''
+
+    def __init__(self, control, label_on_top=True, parent=None):
+        super(LabeledControl, self).__init__(parent=parent)
+
+        self.control = control
+
+        if label_on_top:
+            self.label = Label(self.control.nice_name)
+            self.layout = QtGui.QVBoxLayout()
+        else:
+            self.label = RightLabel(self.control.nice_name)
+            self.layout = QtGui.QHBoxLayout()
+
+
+        if isinstance(self.control, CheckBox):
+            self.label.clicked.connect(self.control.toggle)
+            self.label.setObjectName('clickable')
+
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.control)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self.layout)
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.control, attr)
+        except AttributeError:
+            raise AttributeError('Control has no attr: {}'.format(attr))
+
 class IconButton(QtGui.QPushButton):
     '''A button with an icon.
 
@@ -45,7 +76,6 @@ class Label(QtGui.QLabel):
     def __init__(self, *args, **kwargs):
         super(Label, self).__init__(*args, **kwargs)
         self.setProperty('clickable', True)
-        self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
         self.clicked.emit()
@@ -60,7 +90,6 @@ class RightLabel(QtGui.QLabel):
         super(RightLabel, self).__init__(*args, **kwargs)
         self.setProperty('clickable', True)
         self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
         self.clicked.emit()
@@ -75,7 +104,6 @@ class LeftLabel(QtGui.QLabel):
         super(LeftLabel, self).__init__(*args, **kwargs)
         self.setProperty('clickable', True)
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.setFixedHeight(30)
 
     def mousePressEvent(self, event):
         self.clicked.emit()
