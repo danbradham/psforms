@@ -4,19 +4,13 @@ __title__ = 'psforms'
 __author__ = 'Dan Bradham'
 __email__ = 'danielbradham@gmail.com'
 __url__ = 'http://github.com/danbradham/psforms.git'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __license__ = 'MIT'
 __description__ = 'Hassle free PySide forms.'
 
 import os
 
-from . import resource
-from . import controls
-from . import widgets
-from .exc import (FormNotInstantiated, FieldNotFound, FieldNotInstantiated)
-from .fields import (BoolField, IntField, Int2Field, FloatField, Float2Field,
-                     StringField, StringOptionField, IntOptionField,
-                     FieldGroup)
+from . import (controls, exc, fields, resource, widgets)
 from .form import Form
 
 with open(os.path.join(os.path.dirname(__file__), 'style.css')) as f:

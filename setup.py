@@ -18,7 +18,7 @@ with open("README.rst") as f:
 
 setup(
     name='psforms',
-    version='0.2.0',
+    version='0.3.0',
     description='Hassle free PySide forms.',
     long_description=readme,
     author='Dan Bradham',

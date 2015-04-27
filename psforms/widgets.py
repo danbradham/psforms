@@ -3,23 +3,23 @@ import math
 from . import controls
 
 
-class Widget(QtGui.QWidget):
+class Container(QtGui.QWidget):
     '''Base Widget class, used to contain all field controls and groups.'''
 
     def __init__(self, parent=None):
-        super(Widget, self).__init__(parent)
+        super(Container, self).__init__(parent)
 
         self.layout = QtGui.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
-        self.groups = []
+        self.forms = []
         self.header = None
 
     def __getattr__(self, attr):
-        for group in self.groups:
+        for form in self.forms:
             try:
-                return getattr(self.group, attr)
+                return getattr(self.form, attr)
             except AttributeError:
                 raise AttributeError('Widget has no attr: {}'.format(attr))
 
@@ -27,35 +27,35 @@ class Widget(QtGui.QWidget):
         header = Header(title, description, icon, self)
         self.layout.addWidget(header)
 
-    def add_group(self, name, group):
-        self.layout.addWidget(group)
-        self.groups.append(group)
-        setattr(self, name, group)
+    def add_form(self, name, form):
+        self.layout.addWidget(form)
+        self.forms.append(form)
+        setattr(self, name, form)
 
     def get_value(self):
         '''Get the values of all the controls'''
 
         data = {}
 
-        for group in self.groups:
-            data.update(group.get_value())
+        for form in self.forms:
+            data.update(form.get_value())
 
         return data
 
     def set_value(self, **data):
         '''Set the value of all the controls'''
 
-        for group in self.groups:
+        for form in self.forms:
             for name, control in controls:
                 if name in data:
                     control.set_value(data[name])
 
 
 
-class Group(QtGui.QWidget):
+class Widget(QtGui.QWidget):
 
     def __init__(self, name, columns=1, parent=None):
-        super(Group, self).__init__(parent)
+        super(Widget, self).__init__(parent)
 
         self.name = name
         self.controls = {}
@@ -120,50 +120,6 @@ class Dialog(QtGui.QDialog):
             return getattr(self.widget, attr)
         except AttributeError:
             raise AttributeError('Dialog has no attr: {}'.format(attr))
-
-
-# class Group(QtGui.QGroupBox):
-
-#     def __init__(self, title, widget, parent=None):
-#         super(Group, self).__init__(title, parent=parent)
-
-#         self.widget = widget
-
-#         self.layout = QtGui.QGridLayout()
-#         self.setLayout(self.layout)
-#         self.layout.setRowStretch(1000, 1)
-#         self.layout.setContentsMargins(20, 20, 20, 20)
-#         self.layout.addWidget(self.widget, 0, 0)
-
-#         self.unfolded = True
-#         self.setProperty('unfolded', True)
-#         self.setCheckable(True)
-#         self.setChecked(True)
-#         self.clicked.connect(self.fold)
-
-#     def __getattr__(self, attr):
-#         try:
-#             return getattr(self.widget, attr)
-#         except AttributeError:
-#             raise AttributeError('Dialog has no attr: {}'.format(attr))
-
-#     def fold(self):
-#         '''Toggle visibility for all widgets'''
-#         self.setChecked(True)
-#         self.unfolded = not self.unfolded
-
-#         num_children = self.layout.count()
-#         for i in xrange(num_children):
-#             c = self.layout.itemAt(i).widget()
-#             c.setVisible(self.unfolded)
-
-#         for name, control in self.widget.controls.iteritems():
-#             control.setEnabled(True) # Controls are always enabled
-
-#         self.setProperty('unfolded', not self.property('unfolded'))
-#         self.style().unpolish(self)
-#         self.style().polish(self)
-#         self.update()
 
 
 class Header(QtGui.QWidget):

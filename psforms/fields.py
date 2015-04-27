@@ -2,59 +2,29 @@
 from .exc import FieldNotInstantiated
 from . import controls
 from . import widgets
+from .utils import Ordered
 
 
-class Counted(object):
-    '''Maintains the order of creation for instances/subclasses'''
-
-    _count = 0
-
-    def __init__(self):
-        Counted._count += 1
-        self._order = self._count
-
-
-class FieldGroup(Counted):
-    '''Produces a group of fields arrayed in a number of columns.'''
-
-    group_cls = widgets.Group
-
-    def __init__(self, name, columns=1):
-        super(FieldGroup, self).__init__()
-
-        self.name = name
-        self.columns = columns
-
-    def create(self):
-        group = self.group_cls(self.name, self.columns)
-        return group
-
-
-class Field(Counted):
+class Field(Ordered):
     ''':class:`Form` calls the :meth:`create` to retrieve an appropriate
     control.
 
     :param name: Nice name of the field (str)
     :param labeled: Field Control has label (bool)
+        Overrides the parent Forms labeled attribute for this field only
     :param label_on_top: Label appears on top of the field control (bool)
-    :param group: FieldGroup the control belongs in
-    :param on_left: Field control will appear on the left of group (bool)
-    :param on_right: Field control will appear on the right of group (bool)
+        Overrides the parent Forms label_on_top attribute for this field only
     :param default: Default value (str)
     '''
 
     control_cls = None
 
-    def __init__(self, name, labeled=True, label_on_top=True,
-                 group=None, on_left=None, on_right=None, default=None):
+    def __init__(self, name, labeled=None, label_on_top=None, default=None):
         super(Field, self).__init__()
 
         self.name = name
         self.labeled = labeled
         self.label_on_top = label_on_top
-        self.group = group
-        self.on_left = on_left
-        self.on_right = on_right
         self.default = default
 
     def __repr__(self):
