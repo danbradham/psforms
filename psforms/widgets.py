@@ -19,7 +19,7 @@ class Container(QtGui.QWidget):
     def __getattr__(self, attr):
         for form in self.forms:
             try:
-                return getattr(self.form, attr)
+                return getattr(form, attr)
             except AttributeError:
                 raise AttributeError('Widget has no attr: {}'.format(attr))
 
@@ -49,7 +49,6 @@ class Container(QtGui.QWidget):
             for name, control in controls:
                 if name in data:
                     control.set_value(data[name])
-
 
 
 class Widget(QtGui.QWidget):
@@ -107,13 +106,17 @@ class Dialog(QtGui.QDialog):
         self.accept_button.clicked.connect(self.accept)
 
         self.layout = QtGui.QGridLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setRowStretch(0, 1)
-        self.layout.setColumnStretch(0, 1)
         self.setLayout(self.layout)
 
-        self.layout.addWidget(self.widget, 0, 0, 1, 3)
-        self.layout.addWidget(self.cancel_button, 1, 1)
-        self.layout.addWidget(self.accept_button, 1, 2)
+        self.button_layout = QtGui.QHBoxLayout()
+        self.button_layout.setContentsMargins(20, 20, 20, 20)
+        self.button_layout.addWidget(self.cancel_button)
+        self.button_layout.addWidget(self.accept_button)
+
+        self.layout.addWidget(self.widget, 0, 0)
+        self.layout.addLayout(self.button_layout, 1, 0)
 
     def __getattr__(self, attr):
         try:

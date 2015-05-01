@@ -25,6 +25,8 @@ class Form(Ordered):
 
     @classmethod
     def _fields(cls):
+        '''Returns Field objects in sorted order'''
+
         cls_fields = []
         for name, attr in cls.__dict__.iteritems():
             if issubclass(attr.__class__, Field):
@@ -33,6 +35,8 @@ class Form(Ordered):
 
     @classmethod
     def _forms(cls):
+        '''Returns Form objects in sorted order'''
+
         cls_forms = []
         for name, attr in cls.__dict__.iteritems():
             if issubclass(attr.__class__, Form):
@@ -41,6 +45,8 @@ class Form(Ordered):
 
     @classmethod
     def _create_controls(cls):
+        '''Create and return controls from Field objects.'''
+
         controls = OrderedDict()
 
         for name, field in cls._fields():
@@ -55,12 +61,6 @@ class Form(Ordered):
         return controls
 
     @classmethod
-    def _create_forms(cls):
-        sub_forms = cls._forms()
-        for name, form in sub_forms:
-            form.as_widget()
-
-    @classmethod
     def create(cls, parent=None):
         '''Create a widget for this form using all Field attributes'''
 
@@ -72,19 +72,19 @@ class Form(Ordered):
 
     @classmethod
     def as_widget(cls, parent=None):
-        '''Get this form as a widget, including fields and sub forms'''
+        '''Get this form as a widget'''
 
-        container = Container(parent=parent)
+        container = Container(parent)
 
         if cls.header:
             container.add_header(cls.title, cls.description, cls.icon)
 
         if cls._fields():
-            widget = cls.create(parent=parent)
+            widget = cls.create(parent)
             container.add_form(cls.title, widget)
 
         for name, form in cls._forms():
-            container.add_form(name, form.create(parent=container))
+            container.add_form(name, form.create(container))
 
         return container
 
@@ -92,8 +92,8 @@ class Form(Ordered):
 
     @classmethod
     def as_dialog(cls, parent=None):
+        '''Get this form as a dialog'''
 
-        widget = cls._create_widget()
-        dialog = Dialog(widget, parent=parent)
+        dialog = Dialog(cls.as_widget(), parent=parent)
         dialog.setWindowTitle(cls.title)
         return dialog

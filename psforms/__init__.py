@@ -4,7 +4,7 @@ __title__ = 'psforms'
 __author__ = 'Dan Bradham'
 __email__ = 'danielbradham@gmail.com'
 __url__ = 'http://github.com/danbradham/psforms.git'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __license__ = 'MIT'
 __description__ = 'Hassle free PySide forms.'
 
