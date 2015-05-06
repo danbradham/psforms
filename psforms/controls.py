@@ -21,21 +21,22 @@ class LabeledControl(QtGui.QWidget):
 
         self.control = control
 
+        self.layout = QtGui.QGridLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
         if label_on_top:
             self.label = Label(self.control.nice_name)
-            self.layout = QtGui.QVBoxLayout()
+            self.layout.addWidget(self.control, 1, 0)
         else:
             self.label = RightLabel(self.control.nice_name)
-            self.layout = QtGui.QHBoxLayout()
-
+            self.layout.setColumnStretch(1, 1)
+            self.layout.addWidget(self.control, 0, 1)
 
         if isinstance(self.control, CheckBox):
             self.label.clicked.connect(self.control.toggle)
             self.label.setObjectName('clickable')
 
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.control)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.label, 0, 0)
         self.setLayout(self.layout)
 
     def __getattr__(self, attr):
@@ -43,6 +44,7 @@ class LabeledControl(QtGui.QWidget):
             return getattr(self.control, attr)
         except AttributeError:
             raise AttributeError('Control has no attr: {}'.format(attr))
+
 
 class IconButton(QtGui.QPushButton):
     '''A button with an icon.

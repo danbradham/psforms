@@ -49,6 +49,14 @@ class Form(Ordered):
 
         controls = OrderedDict()
 
+        fields = cls._fields()
+
+        # Get the width of the maximum length label
+        max_len_label = QtGui.QLabel(max([x for x, y in fields]))
+        hint = max_len_label.sizeHint()
+        max_width = hint.width()
+        del(max_len_label)
+
         for name, field in cls._fields():
             control = field.create()
             control.setObjectName(name)
@@ -56,6 +64,7 @@ class Form(Ordered):
             label_on_top = field.label_on_top or cls.labels_on_top
             if labeled:
                 control = LabeledControl(control, label_on_top)
+                control.label.setFixedWidth(max_width) # Apply max length
             controls[name] = control
 
         return controls
