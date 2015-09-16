@@ -100,9 +100,54 @@ class Form(Ordered):
         return widget
 
     @classmethod
-    def as_dialog(cls, parent=None):
+    def as_dialog(cls, frameless=False, dim=False, parent=None):
         '''Get this form as a dialog'''
+
 
         dialog = Dialog(cls.as_widget(), parent=parent)
         dialog.setWindowTitle(cls.title)
+        if frameless:
+            dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+        if dim:
+            def _bg_widgets():
+                qapp = QtGui.QApplication.instance()
+                desktop = qapp.desktop()
+                screens = desktop.screenCount()
+                widgets = []
+                for i in xrange(screens):
+                    geo = desktop.screenGeometry(i)
+                    w = QtGui.QWidget()
+                    w.setGeometry(geo)
+                    w.setStyleSheet('QWidget {background:black}')
+                    w.setWindowOpacity(0.3)
+                    widgets.append(w)
+
+                def show():
+                    for w in widgets:
+                        w.show()
+                def hide():
+                    for w in widgets:
+                        w.hide()
+                return show, hide
+
+            old_exec = dialog.exec_
+            old_show = dialog.show
+            def _exec_(*args, **kwargs):
+                bgshow, bghide = _bg_widgets()
+                bgshow()
+                result = old_exec(*args, **kwargs)
+                bghide()
+                return result
+
+            def _show(*args, **kwargs):
+                bgshow, bghide = _bg_widgets()
+                bgshow()
+                result = old_show(*args, **kwargs)
+                bghide()
+                return result
+
+            dialog.exec_ = _exec_
+            dialog.show = _show
+
         return dialog

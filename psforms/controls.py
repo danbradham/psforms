@@ -27,6 +27,7 @@ class LabeledControl(QtGui.QWidget):
         if label_on_top:
             self.label = Label(self.control.nice_name)
             self.layout.addWidget(self.control, 1, 0)
+            self.layout.setColumnStretch(0, 1)
         else:
             self.label = RightLabel(self.control.nice_name)
             self.layout.setColumnStretch(1, 1)
@@ -355,3 +356,50 @@ class LineEdit(QtGui.QLineEdit):
         ''':param str value:'''
 
         self.setText(value)
+
+
+class List(QtGui.QListWidget):
+    '''Wraps :class:`QtGui.QListWidget`'''
+
+    changed = QtCore.Signal()
+
+    def __init__(self, nice_name, items=None, *args, **kwargs):
+        super(Tree, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
+        if items:
+            self.addItems(items)
+        self.itemSelectionChanged.connect(self.emit_changed)
+
+    def emit_changed(self, *args, **kwargs):
+        self.changed.emit()
+
+    def add_item(self, label, icon=None, data=None):
+        item_widget = QtGui.QListWidgetItem()
+        if icon:
+            item_widget.setIcon(QtGui.QIcon(icon))
+        if data:
+            item_widget.setData(QtCore.Qt.UserRole, data)
+        self.addItem(item_widget)
+
+    def get_data(self):
+        ''':return: Data for selected items in :class:`QtGui.QListWidget`
+        :rtype: list'''
+        items = self.selectedItems()
+        items_data = []
+        for item in items:
+            items_data.append(item.data(QtCore.Qt.UserRole))
+
+    def get_value(self):
+        ''':return: Value of the underlying :class:`QtGui.QTreeWidget`
+        :rtype: str'''
+
+    def set_value(self, value):
+        '''Sets the selection of the list to the specified value, label or
+        index'''
+
+        if isinstance(value, (str, unicode)):
+            items = self.findItems(value)
+            if items:
+                self.setCurrentItem(items[0])
+        elif isinstance(value, int):
+            self.setCurrentIndex(int)

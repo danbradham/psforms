@@ -38,6 +38,16 @@ class Field(Ordered):
         return control
 
 
+class ListField(Field):
+    '''Represented by a :class:`List` control
+
+    :param name: Nice name of field (str)
+    :param default: Default value (list of strings)
+    '''
+
+    control_cls = controls.List
+
+
 class BoolField(Field):
     '''Represented by a :class:`CheckBox` control.
 
