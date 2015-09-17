@@ -10,7 +10,10 @@ of :class:`ComboBox` and :class:`IntComboBox` a sequence of items to add to
 the wrapped QComboBox. In addition each control emits a Signal named `changed`
 whenever the value is changed by user interaction.
 '''
+import os
 from PySide import QtGui, QtCore
+from . import resource
+from .widgets import ScalingImage
 
 
 class LabeledControl(QtGui.QWidget):
@@ -27,7 +30,6 @@ class LabeledControl(QtGui.QWidget):
         if label_on_top:
             self.label = Label(self.control.nice_name)
             self.layout.addWidget(self.control, 1, 0)
-            self.layout.setColumnStretch(0, 1)
         else:
             self.label = RightLabel(self.control.nice_name)
             self.layout.setColumnStretch(1, 1)
@@ -37,6 +39,7 @@ class LabeledControl(QtGui.QWidget):
             self.label.clicked.connect(self.control.toggle)
             self.label.setObjectName('clickable')
 
+        self.label.setWordWrap(False)
         self.layout.addWidget(self.label, 0, 0)
         self.setLayout(self.layout)
 
@@ -57,7 +60,7 @@ class IconButton(QtGui.QPushButton):
     '''
 
     def __init__(self, icon, tip, name, size=(24, 24), *args, **kwargs):
-        super(Button, self).__init__(*args, **kwargs)
+        super(IconButton, self).__init__(*args, **kwargs)
 
         self.setObjectName(name)
         self.setIcon(QtGui.QIcon(icon))
@@ -341,6 +344,7 @@ class LineEdit(QtGui.QLineEdit):
     def __init__(self, nice_name, *args, **kwargs):
         super(LineEdit, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
+        self.textChanged.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
         self.changed.emit()
@@ -356,6 +360,111 @@ class LineEdit(QtGui.QLineEdit):
         ''':param str value:'''
 
         self.setText(value)
+
+
+class BaseBrowser(QtGui.QWidget):
+    '''Composite :class:`QtGui.QLineEdit` with :class:`QtGui.QPushButton`
+    for file browsing.
+    '''
+
+    browse_method = QtGui.QFileDialog.getOpenFileName
+    changed = QtCore.Signal()
+
+    def __init__(self, nice_name, caption=None, filters=None, *args, **kwargs):
+        super(BaseBrowser, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
+        self.caption = caption or nice_name
+        self.filters = filters or ["Any files (*)"]
+
+        self.line = LineEdit(nice_name + '_line')
+        self.line.changed.connect(self.emit_changed)
+        self.get_value = self.line.get_value
+        self.set_value = self.line.set_value
+        self.button = IconButton(
+            icon=':/icons/browse_hover',
+            tip='File Browser',
+            name='browse_button',
+            )
+        self.button.clicked.connect(self.browse)
+        layout = QtGui.QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(10)
+        layout.setColumnStretch(0, 1)
+        layout.addWidget(self.line, 0, 0)
+        layout.addWidget(self.button, 0, 1)
+        self.setLayout(layout)
+
+    def emit_changed(self, *args, **kwargs):
+        self.changed.emit()
+
+    @property
+    def basedir(self):
+        line_text = self.line.get_value()
+        if line_text:
+            line_dir = os.path.dirname(line_text)
+            if os.path.exists(line_dir):
+                return line_dir
+        return ''
+
+    def browse(self):
+        value = self.browse_method(
+            self,
+            caption=self.caption,
+            dir=self.basedir)
+        if value:
+            self.set_value(value[0])
+            self.emit_changed()
+
+
+class FileLine(BaseBrowser):
+    '''Line Edit with file browsing button'''
+
+    browse_method = QtGui.QFileDialog.getOpenFileName
+
+
+class FolderLine(BaseBrowser):
+    '''Line Edit with folder browsing button'''
+
+    browse_method = QtGui.QFileDialog.getExistingDirectory
+
+
+class SaveFileLine(BaseBrowser):
+    '''Line Edit with save file browsing button'''
+
+    browse_method = QtGui.QFileDialog.getSaveFileName
+
+
+class ThumbnailLine(QtGui.QWidget):
+    '''Image Browser'''
+
+    changed = QtCore.Signal()
+
+    def __init__(self, nice_name, *args, **kwargs):
+        super(ThumbnailLine, self).__init__(*args, **kwargs)
+        self.nice_name = nice_name
+
+        self.thumb = ScalingImage()
+        self.file_line = FileLine(nice_name + '_line')
+        self.file_line.changed.connect(self.emit_changed)
+
+        layout = QtGui.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(10)
+        layout.addWidget(self.thumb)
+        layout.addWidget(self.file_line)
+        self.setLayout(layout)
+
+    def emit_changed(self, *args, **kwargs):
+        self.thumb.set_image(self.file_line.get_value())
+        self.changed.emit()
+
+    def get_value(self):
+        return self.file_line.get_value()
+
+    def set_value(self, value):
+        if os.path.exists(value):
+            self.file_line.set_value(value)
+        raise OSError('Path does not exist.')
 
 
 class List(QtGui.QListWidget):
@@ -388,12 +497,19 @@ class List(QtGui.QListWidget):
         items_data = []
         for item in items:
             items_data.append(item.data(QtCore.Qt.UserRole))
+        return items_data
 
     def get_value(self):
         ''':return: Value of the underlying :class:`QtGui.QTreeWidget`
         :rtype: str'''
 
-    def set_value(self, value):
+        items = self.selectedItems()
+        item_values = []
+        for item in items:
+            item_values.append(item.text())
+        return item_values
+
+
         '''Sets the selection of the list to the specified value, label or
         index'''
 

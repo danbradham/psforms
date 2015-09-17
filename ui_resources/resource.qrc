@@ -2,14 +2,17 @@
 <qresource prefix="/">
     <file alias="style">style.css</file>
 </qresource>
-<qresource prefix="/icons">>
-    <file alias="browse">browse_icon.png</file>
-    <file alias="browse_hover">browse_icon_hover.png</file>
-    <file alias="refresh">refresh.png</file>
-    <file alias="refresh_pressed">refresh_pressed.png</file>
-    <file alias="plus">plus.png</file>
-    <file alias="plus_hover">plus_hover.png</file>
-    <file alias="minus">minus.png</file>
-    <file alias="minus_hover">minus_hover.png</file>
+<qresource prefix="/icons">
+    <file alias="browse">icons/browse.png</file>
+    <file alias="browse_hover">icons/browse_hover.png</file>
+    <file alias="refresh">icons/refresh.png</file>
+    <file alias="refresh_pressed">icons/refresh_pressed.png</file>
+    <file alias="plus">icons/plus.png</file>
+    <file alias="plus_hover">icons/plus_hover.png</file>
+    <file alias="minus">icons/minus.png</file>
+    <file alias="minus_hover">icons/minus_hover.png</file>
+</qresource>
+<qresource prefix="/images">
+    <file alias="noimg">images/noimg.png</file>
 </qresource>
 </RCC>

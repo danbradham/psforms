@@ -22,6 +22,7 @@ class Form(Ordered):
     columns = 1
     labeled = True
     labels_on_top = True
+    layout_horizontal = False
 
     @classmethod
     def _fields(cls):
@@ -83,7 +84,7 @@ class Form(Ordered):
     def as_widget(cls, parent=None):
         '''Get this form as a widget'''
 
-        container = Container(parent)
+        container = Container(cls.layout_horizontal, parent)
 
         if cls.header:
             container.add_header(cls.title, cls.description, cls.icon)
@@ -106,10 +107,12 @@ class Form(Ordered):
 
         dialog = Dialog(cls.as_widget(), parent=parent)
         dialog.setWindowTitle(cls.title)
+        window_flags = QtCore.Qt.WindowStaysOnTopHint
         if frameless:
-            dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+            window_flags |= QtCore.Qt.FramelessWindowHint
+        dialog.setWindowFlags(window_flags)
 
-        if dim:
+        if dim: # Dim all monitors when showing the dialog
             def _bg_widgets():
                 qapp = QtGui.QApplication.instance()
                 desktop = qapp.desktop()

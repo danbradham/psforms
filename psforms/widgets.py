@@ -1,18 +1,27 @@
 from PySide import QtGui, QtCore
 import math
-from . import controls
+from . import resource
 
 
 class Container(QtGui.QWidget):
     '''Base Widget class, used to contain all field controls and groups.'''
 
-    def __init__(self, parent=None):
+    def __init__(self, layout_horizontal=False, parent=None):
         super(Container, self).__init__(parent)
-
         self.layout = QtGui.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
+
+        if layout_horizontal:
+            self.form_layout = QtGui.QHBoxLayout()
+        else:
+            self.form_layout = QtGui.QVBoxLayout()
+        self.form_layout.setContentsMargins(0, 0, 0, 0)
+        self.form_layout.setSpacing(0)
+
+        self.layout.addLayout(self.form_layout)
         self.setLayout(self.layout)
+
         self.forms = []
         self.header = None
 
@@ -24,11 +33,11 @@ class Container(QtGui.QWidget):
                 raise AttributeError('Widget has no attr: {}'.format(attr))
 
     def add_header(self, title, description=None, icon=None):
-        header = Header(title, description, icon, self)
-        self.layout.addWidget(header)
+        self.header = Header(title, description, icon, self)
+        self.layout.insertWidget(0, self.header)
 
     def add_form(self, name, form):
-        self.layout.addWidget(form)
+        self.form_layout.addWidget(form)
         self.forms.append(form)
         setattr(self, name, form)
 
@@ -153,3 +162,84 @@ class Header(QtGui.QWidget):
 
         self.setProperty('header', True)
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+
+        self._mouse_button = None
+        self._mouse_last_pos = None
+
+    def mousePressEvent(self, event):
+        self._mouse_button = event.button()
+        super(Header, self).mousePressEvent(event)
+        self._window = self.window()
+
+    def mouseMoveEvent(self, event):
+        '''Click + Dragging moves window'''
+
+        if self._mouse_button == QtCore.Qt.LeftButton:
+            if self._mouse_last_pos:
+
+                p = self._window.pos()
+                v = event.globalPos() - self._mouse_last_pos
+                self._window.move(p + v)
+
+            self._mouse_last_pos = event.globalPos()
+
+        super(Header, self).mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._mouse_button = None
+        self._mouse_last_pos = None
+        self._window = None
+        super(Header, self).mouseReleaseEvent(event)
+
+
+class ScalingImage(QtGui.QLabel):
+
+    __images = {}
+
+    def __init__(self, image=None, parent=None):
+        super(ScalingImage, self).__init__(parent)
+        self.images = self.__images
+        if not image:
+            image = ':/images/noimg'
+        self.set_image(image)
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                           QtGui.QSizePolicy.Expanding)
+
+    def set_image(self, image):
+        if not image in self.images:
+            self.img = QtGui.QImage(image)
+            self.images[image] = self.img
+        else:
+            self.img = self.images[image]
+
+        w = self.img.width()
+        h = self.img.height()
+        mn = min(w, h)
+        mx = max(w, h)
+        r = mx / mn
+        w = min(128, mn)
+        self.setMinimumSize(w, w * r)
+        self.scale_pixmap()
+        self.repaint()
+
+    def scale_pixmap(self):
+        scaled_image = self.img.scaled(
+            self.width(),
+            self.height(),
+            QtCore.Qt.KeepAspectRatioByExpanding,
+            QtCore.Qt.SmoothTransformation)
+        self.pixmap = QtGui.QPixmap(scaled_image)
+
+    def resizeEvent(self, event):
+        self.do_resize = True
+        super(ScalingImage, self).resizeEvent(event)
+
+    def paintEvent(self, event):
+        if self.do_resize:
+            self.scale_pixmap()
+            self.do_resize = False
+
+        offsetX = -((self.pixmap.width() - self.width())*0.5)
+        offsetY = -((self.pixmap.height() - self.height())*0.5)
+        painter = QtGui.QPainter(self)
+        painter.drawPixmap(offsetX, offsetY, self.pixmap)

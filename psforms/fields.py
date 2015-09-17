@@ -164,6 +164,7 @@ class OptionField(Field):
             control.set_value(self.default)
         return control
 
+
 class IntOptionField(OptionField):
     '''Represented by an :class:`IntComboBox` control.
 
@@ -173,6 +174,7 @@ class IntOptionField(OptionField):
     '''
 
     control_cls = controls.IntComboBox
+
 
 class StringOptionField(OptionField):
     '''Represented by an :class:`ComboBox` control.
@@ -184,4 +186,55 @@ class StringOptionField(OptionField):
 
     control_cls = controls.ComboBox
 
+
+class BrowseField(Field):
+
+    def __init__(self, name, caption=None, filters=None, **kwargs):
+        super(BrowseField, self).__init__(name, **kwargs)
+        self.caption = caption
+        self.filters = filters
+
+    def create(self):
+        control = self.control_cls(self.name, self.caption, self.filters)
+        if self.default:
+            control.set_value(self.default)
+        return control
+
+
+class FileField(BrowseField):
+    '''Represented by a :class:`FileLine` control
+
+    :param name: Nice name of the field (str)
+    :param default: Default value (str)'''
+
+    control_cls = controls.FileLine
+
+
+class FolderField(BrowseField):
+    '''Represented by a :class:`FolderLine` control
+
+    :param name: Nice name of the field (str)
+    :param default: Default value (str)'''
+
+    control_cls = controls.FolderLine
+
+
+class SaveFileField(BrowseField):
+    '''Represented by a :class:`FolderLine` control
+
+    :param name: Nice name of the field (str)
+    :param default: Default value (str)'''
+
+    control_cls = controls.SaveFileLine
+
+
+
+class ImageField(Field):
+    '''Represented by an :class:`ThumbnailLine` control
+
+    :param name: Nice name of the field (str)
+    :param default: Default value (str filepath)
+    '''
+
+    control_cls = controls.ThumbnailLine
 
