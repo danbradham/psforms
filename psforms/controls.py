@@ -13,112 +13,14 @@ whenever the value is changed by user interaction.
 import os
 from PySide import QtGui, QtCore
 from . import resource
-from .widgets import ScalingImage
-
-
-class LabeledControl(QtGui.QWidget):
-    '''A composite widget with a label and a control.'''
-
-    def __init__(self, control, label_on_top=True, parent=None):
-        super(LabeledControl, self).__init__(parent=parent)
-
-        self.control = control
-
-        self.layout = QtGui.QGridLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        if label_on_top:
-            self.label = Label(self.control.nice_name)
-            self.layout.addWidget(self.control, 1, 0)
-        else:
-            self.label = RightLabel(self.control.nice_name)
-            self.layout.setColumnStretch(1, 1)
-            self.layout.addWidget(self.control, 0, 1)
-
-        if isinstance(self.control, CheckBox):
-            self.label.clicked.connect(self.control.toggle)
-            self.label.setObjectName('clickable')
-
-        self.label.setWordWrap(False)
-        self.layout.addWidget(self.label, 0, 0)
-        self.setLayout(self.layout)
-
-    def __getattr__(self, attr):
-        try:
-            return getattr(self.control, attr)
-        except AttributeError:
-            raise AttributeError('Control has no attr: {}'.format(attr))
-
-
-class IconButton(QtGui.QPushButton):
-    '''A button with an icon.
-
-    :param icon: path to icon file or resource
-    :param tip: tooltip text
-    :param name: object name
-    :param size: width, height tuple (default: (24, 24))
-    '''
-
-    def __init__(self, icon, tip, name, size=(24, 24), *args, **kwargs):
-        super(IconButton, self).__init__(*args, **kwargs)
-
-        self.setObjectName(name)
-        self.setIcon(QtGui.QIcon(icon))
-        self.setIconSize(QtCore.QSize(*size))
-        self.setSizePolicy(
-            QtGui.QSizePolicy.Fixed,
-            QtGui.QSizePolicy.Fixed)
-        self.setFixedHeight(size[0])
-        self.setFixedWidth(size[1])
-        self.setToolTip(tip)
-
-
-class Label(QtGui.QLabel):
-    '''A label that emits a clicked signal on mouse press. Has the same
-    signature as :class:`QtGui.QLabel`.'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(Label, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
-
-class RightLabel(QtGui.QLabel):
-    '''Convenience right aligned Label'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(RightLabel, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-        self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
-
-class LeftLabel(QtGui.QLabel):
-    '''Convenience left aligned Label'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(LeftLabel, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
+from .widgets import (ScalingImage, Control, Label,
+                      LeftLabel, RightLabel, IconButton)
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox):
     '''Wraps :class:`QtGui.QDoubleSpinBox`'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(DoubleSpinBox, self).__init__(*args, **kwargs)
@@ -146,6 +48,7 @@ class TwinDoubleSpinBox(QtGui.QWidget):
     '''Composite widget with two :class:`DoubleSpinBox` s.'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(TwinDoubleSpinBox, self).__init__(*args, **kwargs)
@@ -186,6 +89,7 @@ class SpinBox(QtGui.QSpinBox):
     '''Wraps :class:`QtGui.QSpinBox`'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(SpinBox, self).__init__(*args, **kwargs)
@@ -213,6 +117,7 @@ class TwinSpinBox(QtGui.QWidget):
     '''Composite widget with two :class:`SpinBox` s.'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(TwinSpinBox, self).__init__(*args, **kwargs)
@@ -253,12 +158,14 @@ class ComboBox(QtGui.QComboBox):
     '''Wraps :class:`QtGui.QComboBox`'''
 
     changed = QtCore.Signal()
+    is_control = True
 
-    def __init__(self, nice_name, options, *args, **kwargs):
+    def __init__(self, nice_name, options=None, *args, **kwargs):
         super(ComboBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
+        if options:
+            self.addItems(options)
         self.setFixedHeight(30)
-        self.addItems(options)
         self.activated.connect(self.emit_changed)
 
     def emit_changed(self, *args, **kwargs):
@@ -284,13 +191,18 @@ class IntComboBox(QtGui.QComboBox):
     '''Wraps :class:`QtGui.QComboBox`. Assumes the items will be numeric'''
 
     changed = QtCore.Signal()
+    is_control = True
 
-    def __init__(self, nice_name, options, *args, **kwargs):
+    def __init__(self, nice_name, options=None, *args, **kwargs):
         super(IntComboBox, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         self.setFixedHeight(30)
-        self.addItems([str(i) for i in options])
+        if options:
+            self.addItems(options)
         self.activated.connect(self.emit_changed)
+
+    def addItems(self, items):
+        super(IntComboBox, self).addItems([str(i) for i in options])
 
     def emit_changed(self, *args, **kwargs):
         self.changed.emit()
@@ -312,6 +224,7 @@ class CheckBox(QtGui.QCheckBox):
     '''Wraps :class:`QtGui.QCheckBox`'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
@@ -340,6 +253,7 @@ class LineEdit(QtGui.QLineEdit):
     '''Wraps :class:`QtGui.QLineEdit`'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(LineEdit, self).__init__(*args, **kwargs)
@@ -369,6 +283,7 @@ class BaseBrowser(QtGui.QWidget):
 
     browse_method = QtGui.QFileDialog.getOpenFileName
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, caption=None, filters=None, *args, **kwargs):
         super(BaseBrowser, self).__init__(*args, **kwargs)
@@ -438,6 +353,7 @@ class ThumbnailLine(QtGui.QWidget):
     '''Image Browser'''
 
     changed = QtCore.Signal()
+    is_control = True
 
     def __init__(self, nice_name, *args, **kwargs):
         super(ThumbnailLine, self).__init__(*args, **kwargs)
@@ -471,9 +387,11 @@ class List(QtGui.QListWidget):
     '''Wraps :class:`QtGui.QListWidget`'''
 
     changed = QtCore.Signal()
+    is_control = True
+
 
     def __init__(self, nice_name, items=None, *args, **kwargs):
-        super(Tree, self).__init__(*args, **kwargs)
+        super(List, self).__init__(*args, **kwargs)
         self.nice_name = nice_name
         if items:
             self.addItems(items)

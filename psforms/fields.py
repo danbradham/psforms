@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from .exc import FieldNotInstantiated
 from . import controls
-from . import widgets
 from .utils import Ordered
+from copy import deepcopy
 
 
 class Field(Ordered):
@@ -18,24 +18,34 @@ class Field(Ordered):
     '''
 
     control_cls = None
+    control_defaults = None
+    field_defaults = None
 
     def __init__(self, name, labeled=None, label_on_top=None, default=None):
         super(Field, self).__init__()
 
         self.name = name
-        self.labeled = labeled
-        self.label_on_top = label_on_top
-        self.default = default
+        self.labeled = field_defaults.get('labeled', labeled)
+        self.label_on_top = field_defaults.get('label_on_top', label_on_top)
+        self.default = field_defaults.get('default', default)
 
     def __repr__(self):
         r = '<{}>(name={}, default={})'
         return r.format(self.__class__.__name__, self.name, self.default)
 
     def create(self):
-        control = self.control_cls(self.name)
+        control_kwargs = deepcopy(control_defaults)
+        control_kwargs['nice_name'] = self.name
+        control = self.control_cls(**control_kwargs)
         if self.default:
             control.set_value(self.default)
         return control
+
+
+# def create_field(clsname, control_cls, control_defaults, field_defaults):
+
+
+
 
 
 class ListField(Field):

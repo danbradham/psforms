@@ -6,10 +6,9 @@ except ImportError:
 from operator import attrgetter
 from PySide import QtGui, QtCore
 
-from .controls import LabeledControl
 from .fields import Field
 from .exc import FieldNotFound
-from .widgets import Dialog, Widget, Header, Container
+from .widgets import Dialog, Widget, Header, Container, Control
 from .utils import Ordered, itemattrgetter
 
 
