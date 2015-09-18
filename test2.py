@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 import sys
 from PySide import QtGui
-from psforms import stylesheet, controls
+from psforms import stylesheet, controls, widgets
 import signal
 
 
 def vis_test_controls(labeled=True, label_on_top=True):
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    app = QtGui.QApplication(sys.argv)
+    app.setStyleSheet(stylesheet)
 
     def control_as_dialog(control_cls):
         d = QtGui.QDialog()
@@ -15,8 +20,7 @@ def vis_test_controls(labeled=True, label_on_top=True):
         d.setLayout(l)
         control = control_cls(control_cls.__name__)
         if labeled:
-            labeled = controls.LabeledControl(control, label_on_top)
-            l.addWidget(labeled)
+            l.addWidget(widgets.Control(control, label_on_top))
         else:
             l.addWidget(control)
         return d
@@ -28,18 +32,8 @@ def vis_test_controls(labeled=True, label_on_top=True):
             control_as_dialog(obj).exec_()
 
 
-def run_vis_tests():
-
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    app = QtGui.QApplication(sys.argv)
-    app.setStyleSheet(stylesheet)
-    vis_test_controls()
-
-
-
 if __name__ == '__main__':
 
     args = sys.argv
     if len(args) > 1 and args[1] == '--visual':
-        run_vis_tests()
+        vis_test_controls()

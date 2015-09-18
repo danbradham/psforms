@@ -264,6 +264,7 @@ class Control(QtGui.QWidget):
             self.layout.setColumnStretch(1, 1)
             self.layout.addWidget(self.control, 0, 1)
 
+        from .controls import CheckBox
         if isinstance(self.control, CheckBox):
             self.label.clicked.connect(self.control.toggle)
             self.label.setObjectName('clickable')
