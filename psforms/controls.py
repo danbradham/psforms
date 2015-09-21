@@ -10,311 +10,371 @@ of :class:`ComboBox` and :class:`IntComboBox` a sequence of items to add to
 the wrapped QComboBox. In addition each control emits a Signal named `changed`
 whenever the value is changed by user interaction.
 '''
+
 import os
+from copy import deepcopy
 from PySide import QtGui, QtCore
 from . import resource
-from .widgets import (ScalingImage, Control, Label,
-                      LeftLabel, RightLabel, IconButton)
+from .widgets import ScalingImage, IconButton
+from .exc import ValidationError
 
-class DoubleSpinBox(QtGui.QDoubleSpinBox):
-    '''Wraps :class:`QtGui.QDoubleSpinBox`'''
 
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(DoubleSpinBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setFixedHeight(30)
-        self.lineEdit().textEdited.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QDoubleSpinBox`
-        :rtype: float
-        '''
-
-        return self.value()
-
-    def set_value(self, value):
-        ''':param float value:'''
-
-        self.setValue(value)
-
-
-class TwinDoubleSpinBox(QtGui.QWidget):
-    '''Composite widget with two :class:`DoubleSpinBox` s.'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(TwinDoubleSpinBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        self.setFixedHeight(30)
-        g = QtGui.QGridLayout()
-        g.setSpacing(20)
-        g.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(g)
-        self.left_box = DoubleSpinBox('subcontrol')
-        self.right_box = DoubleSpinBox('subcontrol')
-        g.addWidget(self.left_box, 0, 0)
-        g.addWidget(self.right_box, 0, 1)
-        self.left_box.lineEdit().textEdited.connect(self.emit_changed)
-        self.right_box.lineEdit().textEdited.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':returns: The value of each :class:`DoubleSpinBox`
-        :rtype: tuple of two floats
-        '''
-
-        return self.left_box.get_value(), self.right_box.get_value()
-
-    def set_value(self, value):
-        ''':param value: A tuple including the values of both
-        :class:`DoubleSpinBox` s
-        '''
-
-        self.left_box.setValue(value[0])
-        self.right_box.setValue(value[1])
-
-
-class SpinBox(QtGui.QSpinBox):
-    '''Wraps :class:`QtGui.QSpinBox`'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(SpinBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setFixedHeight(30)
-        self.lineEdit().textEdited.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QSpinBox`
-        :rtype: int
-        '''
-
-        return self.value()
-
-    def set_value(self, value):
-        ''':param int value:'''
-
-        self.setValue(value)
-
-
-class TwinSpinBox(QtGui.QWidget):
-    '''Composite widget with two :class:`SpinBox` s.'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(TwinSpinBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        self.setFixedHeight(30)
-        g = QtGui.QGridLayout()
-        g.setSpacing(20)
-        g.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(g)
-        self.left_box = SpinBox('subcontrol')
-        self.right_box = SpinBox('subcontrol')
-        g.addWidget(self.left_box, 0, 0)
-        g.addWidget(self.right_box, 0, 1)
-        self.left_box.lineEdit().textEdited.connect(self.emit_changed)
-        self.right_box.lineEdit().textEdited.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':returns: The value of each :class:`QtGui.SpinBox`
-        :rtype: tuple of two ints
-        '''
-
-        return self.left_box.get_value(), self.right_box.get_value()
-
-    def set_value(self, value):
-        ''':param value: A tuple including the values of both
-        :class:`SpinBox` s
-        '''
-
-        self.left_box.setValue(value[0])
-        self.right_box.setValue(value[1])
-
-
-class ComboBox(QtGui.QComboBox):
-    '''Wraps :class:`QtGui.QComboBox`'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, options=None, *args, **kwargs):
-        super(ComboBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        if options:
-            self.addItems(options)
-        self.setFixedHeight(30)
-        self.activated.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_data(self):
-        return self.itemData(self.currentIndex(), QtCore.Qt.UserRole)
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QComboBox`
-        :rtype: str
-        '''
-
-        return self.currentText()
-
-    def set_value(self, value):
-        ''':param str value:'''
-
-        self.setCurrentIndex(self.findText(value))
-
-
-class IntComboBox(QtGui.QComboBox):
-    '''Wraps :class:`QtGui.QComboBox`. Assumes the items will be numeric'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, options=None, *args, **kwargs):
-        super(IntComboBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setFixedHeight(30)
-        if options:
-            self.addItems(options)
-        self.activated.connect(self.emit_changed)
-
-    def addItems(self, items):
-        super(IntComboBox, self).addItems([str(i) for i in options])
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QComboBox`
-        :rtype: int
-        '''
-
-        return int(self.currentText())
-
-    def set_value(self, value):
-        ''':param int value:'''
-
-        self.setCurrentIndex(self.findText(str(value)))
-
-
-class CheckBox(QtGui.QCheckBox):
-    '''Wraps :class:`QtGui.QCheckBox`'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(CheckBox, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.setFixedHeight(20)
-        self.setFixedWidth(20)
-        self.clicked.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QCheckBox`
-        :rtype: bool
-        '''
-
-        return self.isChecked()
-
-    def set_value(self, value):
-        ''':param bool value:'''
-
-        self.setChecked(value)
-
-
-class LineEdit(QtGui.QLineEdit):
-    '''Wraps :class:`QtGui.QLineEdit`'''
-
-    changed = QtCore.Signal()
-    is_control = True
-
-    def __init__(self, nice_name, *args, **kwargs):
-        super(LineEdit, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.textChanged.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
-
-    def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QLineEdit`
-        :rtype: str
-        '''
-
-        return self.text()
-
-    def set_value(self, value):
-        ''':param str value:'''
-
-        self.setText(value)
-
-
-class BaseBrowser(QtGui.QWidget):
-    '''Composite :class:`QtGui.QLineEdit` with :class:`QtGui.QPushButton`
-    for file browsing.
+class BaseControl(QtCore.QObject):
+    '''Composite Control Object. Used as a base class for all Control Types.
+    Subclasses must implement init_widgets, set_value, and get_value methods.
     '''
 
-    browse_method = QtGui.QFileDialog.getOpenFileName
     changed = QtCore.Signal()
-    is_control = True
+    validate = QtCore.Signal()
+    properties = dict(
+        valid=True,
+    )
 
-    def __init__(self, nice_name, caption=None, filters=None, *args, **kwargs):
-        super(BaseBrowser, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        self.caption = caption or nice_name
+    def __init__(self, name, labeled=True, label_on_top=True,
+                 default=None, validators=None, *args, **kwargs):
+        super(BaseControl, self).__init__(*args, **kwargs)
+
+        self._name = name
+        self._labeled = labeled
+        self._label_on_top = label_on_top
+
+        self._init_widgets()
+        self._init_properties()
+
+        if default:
+            self.set_value(default)
+
+    @property
+    def name(self):
+        '''Property that adjusts the name and label of this control.'''
+
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if self.label:
+            self.label.setText(self._name)
+        self._name = value
+
+    @property
+    def labeled(self):
+        '''Determines whether this label is visible or hidden.'''
+
+        return self._labeled
+
+    @labeled.setter
+    def labeled(self, value):
+        self._labeled = value
+        if self._labeled:
+            self.label.show()
+        else:
+            self.label.hide()
+
+    @property
+    def label_on_top(self):
+        '''Determines where the label is drawn, on top or left.'''
+
+        return self._label_on_top
+
+    @label_on_top.setter
+    def label_on_top(self, value):
+        self._label_on_top = value
+        if self._label_on_top:
+            self.layout.setDirection(QtGui.QBoxLayout.TopToBottom)
+        else:
+            self.layout.setDirection(QtGui.QBoxLayout.LeftToRight)
+
+    def init_widgets(self):
+        '''Subclasses must implement this method...
+
+        Used to build the widgets for this control.
+        Must return a tuple of widgets, where the first element is the main
+        widget used to parent this control to a layout. Additionally users
+        must attach their widgets to emit the changed signal of this control
+        to properly allow for active form validation.
+        '''
+
+        raise NotImplementedError()
+
+    def _init_widgets(self):
+        '''Binds the widgets returned by init_widgets to self.widget and
+        self.widgets.
+        '''
+
+        self.widgets = self.init_widgets()
+        self.widget = self.widgets[0]
+
+        self.label = QtGui.QLabel(self.name)
+        if isinstance(self.widget, QtGui.QCheckBox):
+            self.label.setProperty('clickable', True)
+            self.label.setAlignment(
+                QtCore.Qt.AlignRight |
+                QtCore.Qt.AlignVCenter)
+            def _mousePressEvent(event):
+                self.widget.toggle()
+            self.label.mousePressEvent = _mousePressEvent
+
+        self.widgets = tuple(list(self.widgets) + [self.label])
+
+        if self.label_on_top:
+            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        else:
+            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.widget)
+
+        self.main_widget = QtGui.QWidget()
+        self.main_widget.setLayout(self.layout)
+
+    def _init_properties(self):
+        '''Initializes the qt properties on all this controls widgets.'''
+
+        self.properties = deepcopy(self.properties)
+        for p, v in self.properties.iteritems():
+            self.set_property(p, v)
+
+    def emit_changed(self, *args):
+        self.changed.emit()
+        self.emit_validate()
+
+    def emit_validate(self):
+        self.validate.emit(self)
+
+    def get_value(self):
+        '''Subclasses must implement this method...
+
+        Must return the value of this control. Use the widgets you create in
+        init_widgets, accessible through the widgets attribute after
+        initialization.
+        '''
+
+        raise NotImplementedError()
+
+    def set_value(self, value):
+        '''Subclasses must implement this method...
+
+        Must set the value of this control. Use the widgets you create in
+        init_widgets, accessible through the widgets attribute after
+        initialization.
+        '''
+
+        raise NotImplementedError()
+
+    def get_property(self, name):
+        '''Used to get the value of a property of this control.'''
+
+        return self.properties[name]
+
+    def set_property(self, name, value):
+        '''Used to set the value of a property of this control. Consequently
+        sets a Qt Property of the same name on all widgets this control
+        manages. Allowing the use of these properties in stylesheets.
+        '''
+
+        for w in self.widgets:
+            w.setProperty(name, value)
+        self.properties[name] = value
+        self.update_style()
+
+    def update_style(self):
+        '''Used to update the style of all widgets this control manages.'''
+
+        for w in self.widgets:
+            w.style().unpolish(w)
+            w.style().polish(w)
+
+
+class SpinControl(BaseControl):
+
+    widget_cls = QtGui.QSpinBox
+
+    def __init__(self, name, range=None, *args, **kwargs):
+        super(SpinControl, self).__init__(name, *args, **kwargs)
+        if range:
+            self.widget.setRange(*range)
+
+    def init_widgets(self):
+        sb = self.widget_cls(parent=self.parent())
+        sb.valueChanged.connect(self.emit_changed)
+        return (sb,)
+
+    def get_value(self):
+        self.widget.value()
+
+    def set_value(self, value):
+        self.widget.setValue(value)
+
+
+class Spin2Control(BaseControl):
+
+    widget_cls = QtGui.QSpinBox
+
+    def __init__(self, name, range1=None, range2=None, *args, **kwargs):
+        super(Spin2Control, self).__init__(name, *args, **kwargs)
+        if range1:
+            self.widgets[1].setRange(*range1)
+        if range2:
+            self.widgets[2].setRange(*range2)
+
+    def init_widgets(self):
+
+        sb1 = self.widget_cls(parent=self.parent())
+        sb1.valueChanged.connect(self.emit_changed)
+        sb2 = self.widget_cls(parent=self.parent())
+        sb2.valueChanged.connect(self.emit_changed)
+
+        w = QtGui.QWidget()
+        w.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        l = QtGui.QHBoxLayout()
+        l.setSpacing(20)
+        l.setContentsMargins(0, 0, 0, 0)
+        l.addWidget(sb1)
+        l.addWidget(sb2)
+        w.setLayout(l)
+
+        return w, sb1, sb2
+
+    def get_value(self):
+        return self.widgets[1].value(), self.widgets[2].value()
+
+    def set_value(self, value):
+        self.widgets[1].setValue(value[0])
+        self.widgets[2].setValue(value[1])
+
+
+class IntControl(SpinControl):
+
+    widget_cls = QtGui.QSpinBox
+
+
+class Int2Control(Spin2Control):
+
+    widget_cls = QtGui.QSpinBox
+
+
+class FloatControl(SpinControl):
+
+    widget_cls = QtGui.QDoubleSpinBox
+
+
+class Float2Control(Spin2Control):
+
+    widget_cls = QtGui.QDoubleSpinBox
+
+
+class OptionControl(BaseControl):
+
+    def __init__(self, name, options=None, *args, **kwargs):
+        super(OptionControl, self).__init__(name, *args, **kwargs)
+        if options:
+            self.widget.clear()
+            self.widget.addItems(options)
+
+    def init_widgets(self):
+
+        c = QtGui.QComboBox(parent=self.parent())
+        c.activated.connect(self.emit_changed)
+        return (c,)
+
+    def get_data(self):
+        return self.widget.itemData(
+            self.widget.currentIndex(),
+            QtCore.Qt.UserRole
+        )
+
+    def get_value(self):
+        return self.widget.currentText()
+
+    def set_value(self, value):
+        self.widget.setCurrentIndex(self.widget.findText(value))
+
+StringOptionControl = OptionControl
+
+
+class IntOptionControl(OptionControl):
+
+    def init_widgets(self):
+
+        c = QtGui.QComboBox(parent=self.parent())
+        c.activated.connect(self.emit_changed)
+        return (c,)
+
+    def get_value(self):
+        return self.widget.currentIndex()
+
+    def set_value(self, value):
+        self.widget.setCurrentIndex(value)
+
+
+class BoolControl(BaseControl):
+
+    def init_widgets(self):
+        c = QtGui.QCheckBox(parent=self.parent())
+        c.clicked.connect(self.emit_changed)
+        return (c, )
+
+    def get_value(self):
+        return self.widget.isChecked()
+
+    def set_value(self, value):
+        self.widget.setChecked(value)
+
+
+class StringControl(BaseControl):
+
+    def init_widgets(self):
+        le = QtGui.QLineEdit(parent=self.parent())
+        le.textChanged.connect(self.emit_changed)
+        return (le,)
+
+    def get_value(self):
+        return self.widget.text()
+
+    def set_value(self, value):
+        self.widget.setText(value)
+
+
+class BrowseControl(BaseControl):
+
+    browse_method = QtGui.QFileDialog.getOpenFileName
+
+    def __init__(self, name, caption=None, filters=None, *args, **kwargs):
+        super(BrowseControl, self).__init__(name, *args, **kwargs)
+        self.caption = caption or name
         self.filters = filters or ["Any files (*)"]
 
-        self.line = LineEdit(nice_name + '_line')
-        self.line.changed.connect(self.emit_changed)
-        self.get_value = self.line.get_value
-        self.set_value = self.line.set_value
-        self.button = IconButton(
-            icon=':/icons/browse_hover',
-            tip='File Browser',
-            name='browse_button',
-            )
-        self.button.clicked.connect(self.browse)
-        layout = QtGui.QGridLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
-        layout.setColumnStretch(0, 1)
-        layout.addWidget(self.line, 0, 0)
-        layout.addWidget(self.button, 0, 1)
-        self.setLayout(layout)
+    def init_widgets(self):
 
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
+        le = QtGui.QLineEdit(parent=self.parent())
+        le.textChanged.connect(self.emit_changed)
+        b = IconButton(
+            icon=':/icons/browse_hover',
+            tip='Browse',
+            name='browse_button'
+        )
+        b.clicked.connect(self.browse)
+
+        w = QtGui.QWidget(parent=self.parent())
+        l = QtGui.QGridLayout()
+        l.setContentsMargins(0, 0, 0, 0)
+        l.setSpacing(10)
+        l.setColumnStretch(0, 1)
+        l.addWidget(le, 0, 0)
+        l.addWidget(b, 0, 1)
+        w.setLayout(l)
+
+        return (w, le, b)
+
+    def get_value(self):
+        return self.widgets[1].text()
+
+    def set_value(self, value):
+        self.widgets[1].setText(value)
 
     @property
     def basedir(self):
-        line_text = self.line.get_value()
+        line_text = self.get_value()
         if line_text:
             line_dir = os.path.dirname(line_text)
             if os.path.exists(line_dir):
@@ -323,82 +383,69 @@ class BaseBrowser(QtGui.QWidget):
 
     def browse(self):
         value = self.browse_method(
-            self,
+            self.main_widget,
             caption=self.caption,
             dir=self.basedir)
         if value:
             self.set_value(value[0])
-            self.emit_changed()
 
 
-class FileLine(BaseBrowser):
-    '''Line Edit with file browsing button'''
+class FileControl(BrowseControl):
 
     browse_method = QtGui.QFileDialog.getOpenFileName
 
 
-class FolderLine(BaseBrowser):
-    '''Line Edit with folder browsing button'''
+class FolderControl(BrowseControl):
 
     browse_method = QtGui.QFileDialog.getExistingDirectory
 
 
-class SaveFileLine(BaseBrowser):
-    '''Line Edit with save file browsing button'''
+class SaveFileControl(BrowseControl):
 
     browse_method = QtGui.QFileDialog.getSaveFileName
 
 
-class ThumbnailLine(QtGui.QWidget):
-    '''Image Browser'''
+class ImageControl(BaseControl):
 
-    changed = QtCore.Signal()
-    is_control = True
+    def init_widgets(self):
+        w = QtGui.QWidget(parent=self.parent())
+        i = ScalingImage(parent=w)
+        f = FileControl(self.name + '_line', parent=w)
+        f.changed.connect(self.emit_changed)
+        self.file_control = f
 
-    def __init__(self, nice_name, *args, **kwargs):
-        super(ThumbnailLine, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
+        l = QtGui.QVBoxLayout()
+        l.setContentsMargins(0, 0, 0, 0)
+        l.setSpacing(10)
+        l.addWidget(i)
+        l.addWidget(f.main_widget)
+        w.setLayout(l)
 
-        self.thumb = ScalingImage()
-        self.file_line = FileLine(nice_name + '_line')
-        self.file_line.changed.connect(self.emit_changed)
+        return [w, i] + list(f.widgets)
 
-        layout = QtGui.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
-        layout.addWidget(self.thumb)
-        layout.addWidget(self.file_line)
-        self.setLayout(layout)
-
-    def emit_changed(self, *args, **kwargs):
-        self.thumb.set_image(self.file_line.get_value())
+    def emit_changed(self, *args):
         self.changed.emit()
+        self.widgets[1].set_image(self.get_value())
 
     def get_value(self):
-        return self.file_line.get_value()
+        return self.file_control.get_value()
 
     def set_value(self, value):
-        if os.path.exists(value):
-            self.file_line.set_value(value)
-        raise OSError('Path does not exist.')
+        if QtGui.QFile.exists(value):
+            self.file_control.set_value(value)
 
 
-class List(QtGui.QListWidget):
-    '''Wraps :class:`QtGui.QListWidget`'''
+class ListControl(BaseControl):
 
-    changed = QtCore.Signal()
-    is_control = True
+    def __init__(self, name, options=None, *args, **kwargs):
+        super(ListControl, self).__init__(name, *args, **kwargs)
+        if options:
+            self.widget.addItems(options)
 
-
-    def __init__(self, nice_name, items=None, *args, **kwargs):
-        super(List, self).__init__(*args, **kwargs)
-        self.nice_name = nice_name
-        if items:
-            self.addItems(items)
-        self.itemSelectionChanged.connect(self.emit_changed)
-
-    def emit_changed(self, *args, **kwargs):
-        self.changed.emit()
+    def init_widgets(self):
+        l = QtGui.QListWidget()
+        l.itemSelectionChanged.connect(self.emit_changed)
+        return (l,)
 
     def add_item(self, label, icon=None, data=None):
         item_widget = QtGui.QListWidgetItem()
@@ -406,12 +453,12 @@ class List(QtGui.QListWidget):
             item_widget.setIcon(QtGui.QIcon(icon))
         if data:
             item_widget.setData(QtCore.Qt.UserRole, data)
-        self.addItem(item_widget)
+        self.widget.addItem(item_widget)
 
     def get_data(self):
         ''':return: Data for selected items in :class:`QtGui.QListWidget`
         :rtype: list'''
-        items = self.selectedItems()
+        items = self.widget.selectedItems()
         items_data = []
         for item in items:
             items_data.append(item.data(QtCore.Qt.UserRole))
@@ -421,19 +468,19 @@ class List(QtGui.QListWidget):
         ''':return: Value of the underlying :class:`QtGui.QTreeWidget`
         :rtype: str'''
 
-        items = self.selectedItems()
+        items = self.widget.selectedItems()
         item_values = []
         for item in items:
             item_values.append(item.text())
         return item_values
 
-
+    def set_value(self, value):
         '''Sets the selection of the list to the specified value, label or
         index'''
 
         if isinstance(value, (str, unicode)):
-            items = self.findItems(value)
+            items = self.widget.findItems(value)
             if items:
-                self.setCurrentItem(items[0])
+                self.widget.setCurrentItem(items[0])
         elif isinstance(value, int):
-            self.setCurrentIndex(int)
+            self.widget.setCurrentIndex(int)

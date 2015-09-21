@@ -6,35 +6,46 @@ except ImportError:
 from operator import attrgetter
 from PySide import QtGui, QtCore
 
-from .fields import Field
+from .fields import FieldType
 from .exc import FieldNotFound
-from .widgets import Dialog, Widget, Header, Container, Control
+from .widgets import FormDialog, FormWidget, Header, CompositeFormWidget
 from .utils import Ordered, itemattrgetter
+
+
+class FormMetaData(object):
+
+    defaults = dict(
+        title='No Title',
+        description='No Description',
+        icon=None,
+        header=False,
+        columns=1,
+        label=True,
+        labels_on_top=True,
+        layout_horizontal=False,
+    )
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(self.defaults)
+        self.__dict__.update(kwargs)
 
 
 class Form(Ordered):
 
-    title = None
-    description = None
-    icon = None
-    header = False
-    columns = 1
-    labeled = True
-    labels_on_top = True
-    layout_horizontal = False
+    meta = FormMetaData()
 
     @classmethod
-    def _fields(cls):
-        '''Returns Field objects in sorted order'''
+    def fields(cls):
+        '''Returns FieldType objects in sorted order'''
 
         cls_fields = []
         for name, attr in cls.__dict__.iteritems():
-            if issubclass(attr.__class__, Field):
+            if issubclass(attr.__class__, FieldType):
                 cls_fields.append((name, attr))
         return sorted(cls_fields, key=itemattrgetter(1, '_order'))
 
     @classmethod
-    def _forms(cls):
+    def forms(cls):
         '''Returns Form objects in sorted order'''
 
         cls_forms = []
@@ -49,22 +60,19 @@ class Form(Ordered):
 
         controls = OrderedDict()
 
-        fields = cls._fields()
+        fields = cls.fields()
 
         # Get the width of the maximum length label
-        max_len_label = QtGui.QLabel(max([x for x, y in fields]))
-        hint = max_len_label.sizeHint()
-        max_width = hint.width()
-        del(max_len_label)
+        _max_label = max([y.nice_name for x, y in fields], key=len)
+        _label = QtGui.QLabel(_max_label)
+        max_width = _label.sizeHint().width() + 10
 
-        for name, field in cls._fields():
+        for name, field in cls.fields():
             control = field.create()
             control.setObjectName(name)
-            labeled = field.labeled or cls.labeled
-            label_on_top = field.label_on_top or cls.labels_on_top
-            if labeled:
-                control = LabeledControl(control, label_on_top)
-                control.label.setFixedWidth(max_width) # Apply max length
+            labeled = field.labeled or cls.meta.labeled
+            label_on_top = field.label_on_top or cls.meta.labels_on_top
+            control.label.setFixedWidth(max_width)
             controls[name] = control
 
         return controls
@@ -73,7 +81,7 @@ class Form(Ordered):
     def create(cls, parent=None):
         '''Create a widget for this form using all Field attributes'''
 
-        widget = Widget(cls.title, cls.columns, parent)
+        widget = FormWidget(cls.meta.title, cls.meta.columns, parent)
         controls = cls._create_controls()
         for name, control in controls.iteritems():
             widget.add_control(name, control)
@@ -83,29 +91,30 @@ class Form(Ordered):
     def as_widget(cls, parent=None):
         '''Get this form as a widget'''
 
-        container = Container(cls.layout_horizontal, parent)
+        container = CompositeFormWidget(cls.meta.layout_horizontal, parent)
 
-        if cls.header:
-            container.add_header(cls.title, cls.description, cls.icon)
+        if cls.meta.header:
+            container.add_header(
+                cls.meta.title,
+                cls.meta.description,
+                cls.meta.icon
+            )
 
-        if cls._fields():
+        if cls.fields():
             widget = cls.create(parent)
-            container.add_form(cls.title, widget)
+            container.add_form(cls.meta.title, widget)
 
-        for name, form in cls._forms():
+        for name, form in cls.forms():
             container.add_form(name, form.create(container))
 
         return container
-
-        return widget
 
     @classmethod
     def as_dialog(cls, frameless=False, dim=False, parent=None):
         '''Get this form as a dialog'''
 
-
-        dialog = Dialog(cls.as_widget(), parent=parent)
-        dialog.setWindowTitle(cls.title)
+        dialog = FormDialog(cls.as_widget(), parent=parent)
+        dialog.setWindowTitle(cls.meta.title)
         window_flags = QtCore.Qt.WindowStaysOnTopHint
         if frameless:
             window_flags |= QtCore.Qt.FramelessWindowHint
@@ -117,6 +126,7 @@ class Form(Ordered):
                 desktop = qapp.desktop()
                 screens = desktop.screenCount()
                 widgets = []
+
                 for i in xrange(screens):
                     geo = desktop.screenGeometry(i)
                     w = QtGui.QWidget()

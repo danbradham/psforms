@@ -18,18 +18,18 @@ def vis_test_controls(labeled=True, label_on_top=True):
         l.setContentsMargins(0, 0, 0, 0)
         l.setSpacing(0)
         d.setLayout(l)
-        control = control_cls(control_cls.__name__)
-        if labeled:
-            l.addWidget(widgets.Control(control, label_on_top))
-        else:
-            l.addWidget(control)
+        control = control_cls(control_cls.__name__, parent=d)
+        l.addWidget(control.main_widget)
         return d
 
-
     for name in dir(controls):
+        if name == 'BaseControl' or not name.endswith('Control'):
+            continue
         obj = getattr(controls, name)
-        if hasattr(obj, 'is_control'):
-            control_as_dialog(obj).exec_()
+        if not issubclass(obj, controls.BaseControl):
+            continue
+        print 'Testing {}'.format(name)
+        control_as_dialog(obj).exec_()
 
 
 if __name__ == '__main__':

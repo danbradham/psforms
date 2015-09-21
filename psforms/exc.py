@@ -6,3 +6,6 @@ class FieldNotInstantiated(Exception):
 
 class FieldNotFound(Exception):
     pass
+
+class ValidationError(Exception):
+    pass

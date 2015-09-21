@@ -23,7 +23,9 @@ QLabel{
     color: rgb(45, 45, 45);
     font: 10pt "Arial";
 }
-
+QLabel[valid='false']{
+    color: rgb(170, 20, 20);
+}
 QLabel[clickable='true']:hover{
     color: rgb(135, 135, 135);
     font: 10pt "Arial";
@@ -61,10 +63,15 @@ QComboBox {
     font: 10pt "Arial";
     outline: none;
     padding-left: 13;
+    height: 30;
 }
 
-QComboBox {
+QComboBox:focus {
     border: 1px solid rgb(67, 203, 142);
+}
+
+QComboBox[valid='false'] {
+    border: 1px solid rgb(170, 20, 20);
 }
 
 QComboBox::drop-down{
@@ -92,6 +99,8 @@ QCheckBox{
     border-radius: 3;
     border: 1 solid rgb(185, 185, 185);
     color: rgb(235, 235, 235);
+    height: 30;
+    width: 30;
 }
 
 QCheckBox::indicator{
@@ -118,6 +127,7 @@ QDoubleSpinBox {
     color: rgb(45, 45, 45);
     font: 10pt "Arial";
     padding-left: 10;
+    height: 30;
 }
 
 QSpinBox:focus,
@@ -128,6 +138,17 @@ QDoubleSpinBox:focus {
     color: rgb(45, 45, 45);
     font: 10pt "Arial";
     padding-left: 10;
+}
+
+QSpinBox[valid='false'],
+QDoubleSpinBox[valid='false'] {
+    border: 1px solid rgb(170, 20, 20);
+}
+
+
+QSpinBox[valid='false']:focus,
+QDoubleSpinBox[valid='false']:focus {
+    border: 1px solid rgb(170, 20, 20);
 }
 
 QSpinBox:disabled,
@@ -188,7 +209,6 @@ QLineEdit{
     padding-left: 10;
 }
 
-
 QLineEdit:focus{
     background: rgb(255, 255, 255);
     border-radius: 3;
@@ -197,6 +217,14 @@ QLineEdit:focus{
     font: 10pt "Arial";
     height: 30;
     padding-left: 10;
+}
+
+QLineEdit[valid='false']{
+    border: 1px solid rgb(170, 20, 20);
+}
+
+QLineEdit[valid='false']:focus{
+    border: 1px solid rgb(170, 20, 20);
 }
 
 QLineEdit:disabled{

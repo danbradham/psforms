@@ -1,13 +1,15 @@
 from PySide import QtGui, QtCore
 import math
+import os
+from functools import partial
 from . import resource
 
 
-class Container(QtGui.QWidget):
+class CompositeFormWidget(QtGui.QWidget):
     '''Base Widget class, used to contain all field controls and groups.'''
 
     def __init__(self, layout_horizontal=False, parent=None):
-        super(Container, self).__init__(parent)
+        super(CompositeFormWidget, self).__init__(parent)
         self.layout = QtGui.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -26,20 +28,25 @@ class Container(QtGui.QWidget):
         self.header = None
 
     def __getattr__(self, attr):
+        try:
+            super(Form)
         for form in self.forms:
             try:
                 return getattr(form, attr)
             except AttributeError:
                 raise AttributeError('Widget has no attr: {}'.format(attr))
 
-    def add_header(self, title, description=None, icon=None):
-        self.header = Header(title, description, icon, self)
-        self.layout.insertWidget(0, self.header)
+    def get_property(self, name):
+        form_data = {}
 
-    def add_form(self, name, form):
-        self.form_layout.addWidget(form)
-        self.forms.append(form)
-        setattr(self, name, form)
+        for form in self.forms:
+            form_data.update(form.get_property(name))
+
+        return form_data
+
+    @property
+    def valid(self):
+        return all([form.valid for form in self.forms])
 
     def get_value(self):
         '''Get the values of all the controls'''
@@ -60,23 +67,90 @@ class Container(QtGui.QWidget):
                     control.set_value(data[name])
 
 
-class Widget(QtGui.QWidget):
+class ControlLayout(QtGui.QGridLayout):
 
-    def __init__(self, name, columns=1, parent=None):
-        super(Widget, self).__init__(parent)
+    def __init__(self, columns=1, parent=None):
+        super(ControlLayout, self).__init__(parent)
+
+        self._columns = columns
+        self.setContentsMargins(20, 20, 20, 20)
+        self.setRowStretch(1000, 1)
+        self.widgets = []
+
+    @property
+    def columns(self):
+        return self._columns
+
+    @columns.setter
+    def columns(self, value):
+        self._columns = value
+        widgets = list(self.widgets)
+        for w in widgets:
+            self.takeWidget(w)
+        for w in widgets:
+            self.addWidget(w)
+
+    @property
+    def count(self):
+        return len(self.widgets)
+
+    def takeWidget(self, widget):
+        if not widget in self.widgets:
+            return None
+
+        self.widgets.pop(self.widgets.index(widget))
+        self.takeAt(self.indexOf(widget))
+        return widget
+
+    def addWidget(self, widget):
+        count = self.count
+        row = math.floor(count / self.columns)
+        column = (count % self.columns)
+        super(FormLayout, self).addWidget(widget, row, column)
+        self.widgets.append(widget)
+
+
+class FormWidget(QtGui.QWidget):
+
+    def __init__(self, name, columns=1, layout_horizontal=False, parent=None):
+        super(FormWidget, self).__init__(parent)
 
         self.name = name
-        self.controls = {}
+        self.controls = []
+        self.forms = []
         self.columns = columns
         self.parent = parent
 
-        self.layout = QtGui.QGridLayout()
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setRowStretch(1000, 1)
+        self.layout = QtGui.QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.setLayout(self.layout)
+
+        if layout_horizontal:
+            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        else:
+            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+        self.form_layout.setContentsMargins(0, 0, 0, 0)
+        self.form_layout.setSpacing(0)
+
+        self.control_layout = ControlLayout(columns=columns)
+        self.form_layout.addLayout(self.control_layout)
+        self.layout.addLayout(self.form_layout)
 
         self.setProperty('form', True)
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+
+    def get_property(self, name):
+        form_data = {}
+        for name, control in self.controls.iteritems():
+            form_data[name] = control.get_property(name)
+        return form_data
+
+    @property
+    def valid(self):
+        for name, control in self.controls.iteritems():
+            self.validate_control(control)
+        return all(self.get_property('valid').values())
 
     def get_value(self):
         form_data = {}
@@ -92,27 +166,47 @@ class Widget(QtGui.QWidget):
             except KeyError:
                 raise FieldNotFound(name + ' does not exist')
 
+    def validate_control(self, control):
+        for v in control.validators:
+            value = control.get_value()
+            try:
+                v(value)
+            except ValidationError as err:
+                control.set_property('valid', False)
+        if not control.property('valid'):
+            control.set_property('valid', True)
+
+    def add_header(self, title, description=None, icon=None):
+        self.header = Header(title, description, icon, self)
+        self.layout.insertWidget(0, self.header)
+
+    def add_form(self, name, form):
+        self.form_layout.addWidget(form)
+        self.forms.append(form)
+        setattr(self, name, form)
+
     def add_control(self, name, control):
         count = len(self.controls)
         column = (count % self.columns)
         row = math.floor(count / self.columns)
 
-        self.layout.addWidget(control, row, column)
+        self.layout.addWidget(control.main_widget, row, column)
         self.controls[name] = control
+        control.validate.connect(self.validate_control)
 
         setattr(self, name, control)
 
 
-class Dialog(QtGui.QDialog):
+class FormDialog(QtGui.QDialog):
 
     def __init__(self, widget, *args, **kwargs):
-        super(Dialog, self).__init__(*args, **kwargs)
+        super(FormDialog, self).__init__(*args, **kwargs)
 
         self.widget = widget
         self.cancel_button = QtGui.QPushButton('&cancel')
         self.accept_button = QtGui.QPushButton('&accept')
         self.cancel_button.clicked.connect(self.reject)
-        self.accept_button.clicked.connect(self.accept)
+        self.accept_button.clicked.connect(self.on_accept)
 
         self.layout = QtGui.QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -131,7 +225,12 @@ class Dialog(QtGui.QDialog):
         try:
             return getattr(self.widget, attr)
         except AttributeError:
-            raise AttributeError('Dialog has no attr: {}'.format(attr))
+            raise AttributeError('FormDialog has no attr: {}'.format(attr))
+
+    def on_accept(self):
+        if all(self.widget.valid):
+            self.accept()
+        return
 
 
 class Header(QtGui.QWidget):
@@ -207,18 +306,15 @@ class ScalingImage(QtGui.QLabel):
 
     def set_image(self, image):
         if not image in self.images:
-            self.img = QtGui.QImage(image)
+            if not isinstance(image, QtGui.QImage):
+                if not QtCore.QFile.exists(image):
+                    return
+                self.img = QtGui.QImage(image)
             self.images[image] = self.img
         else:
             self.img = self.images[image]
 
-        w = self.img.width()
-        h = self.img.height()
-        mn = min(w, h)
-        mx = max(w, h)
-        r = mx / mn
-        w = min(128, mn)
-        self.setMinimumSize(w, w * r)
+        self.setMinimumSize(227, 128)
         self.scale_pixmap()
         self.repaint()
 
@@ -227,7 +323,7 @@ class ScalingImage(QtGui.QLabel):
             self.width(),
             self.height(),
             QtCore.Qt.KeepAspectRatioByExpanding,
-            QtCore.Qt.SmoothTransformation)
+            QtCore.Qt.FastTransformation)
         self.pixmap = QtGui.QPixmap(scaled_image)
 
     def resizeEvent(self, event):
@@ -245,51 +341,16 @@ class ScalingImage(QtGui.QLabel):
         painter.drawPixmap(offsetX, offsetY, self.pixmap)
 
 
-class Control(QtGui.QWidget):
-    '''A composite widget with a label and a control.'''
-
-    def __init__(self, control, label_on_top=True, parent=None):
-        super(Control, self).__init__(parent=parent)
-
-        self.control = control
-
-        self.layout = QtGui.QGridLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        if label_on_top:
-            self.label = Label(self.control.nice_name)
-            self.layout.addWidget(self.control, 1, 0)
-        else:
-            self.label = RightLabel(self.control.nice_name)
-            self.layout.setColumnStretch(1, 1)
-            self.layout.addWidget(self.control, 0, 1)
-
-        from .controls import CheckBox
-        if isinstance(self.control, CheckBox):
-            self.label.clicked.connect(self.control.toggle)
-            self.label.setObjectName('clickable')
-
-        self.label.setWordWrap(False)
-        self.layout.addWidget(self.label, 0, 0)
-        self.setLayout(self.layout)
-
-    def __getattr__(self, attr):
-        try:
-            return getattr(self.control, attr)
-        except AttributeError:
-            raise AttributeError('Control has no attr: {}'.format(attr))
-
-
 class IconButton(QtGui.QPushButton):
     '''A button with an icon.
 
     :param icon: path to icon file or resource
     :param tip: tooltip text
     :param name: object name
-    :param size: width, height tuple (default: (24, 24))
+    :param size: width, height tuple (default: (30, 30))
     '''
 
-    def __init__(self, icon, tip, name, size=(24, 24), *args, **kwargs):
+    def __init__(self, icon, tip, name, size=(30, 30), *args, **kwargs):
         super(IconButton, self).__init__(*args, **kwargs)
 
         self.setObjectName(name)
@@ -301,45 +362,3 @@ class IconButton(QtGui.QPushButton):
         self.setFixedHeight(size[0])
         self.setFixedWidth(size[1])
         self.setToolTip(tip)
-
-
-class Label(QtGui.QLabel):
-    '''A label that emits a clicked signal on mouse press. Has the same
-    signature as :class:`QtGui.QLabel`.'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(Label, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
-
-class RightLabel(QtGui.QLabel):
-    '''Convenience right aligned Label'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(RightLabel, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-        self.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
-
-class LeftLabel(QtGui.QLabel):
-    '''Convenience left aligned Label'''
-
-    clicked = QtCore.Signal()
-
-    def __init__(self, *args, **kwargs):
-        super(LeftLabel, self).__init__(*args, **kwargs)
-        self.setProperty('clickable', True)
-        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
