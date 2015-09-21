@@ -41,6 +41,8 @@ class BaseControl(QtCore.QObject):
         self._init_widgets()
         self._init_properties()
 
+        self.validators = validators
+
         if default:
             self.set_value(default)
 
@@ -84,82 +86,36 @@ class BaseControl(QtCore.QObject):
         else:
             self.layout.setDirection(QtGui.QBoxLayout.LeftToRight)
 
-    def init_widgets(self):
-        '''Subclasses must implement this method...
+    @property
+    def valid(self):
+        return self.get_property('valid')
 
-        Used to build the widgets for this control.
-        Must return a tuple of widgets, where the first element is the main
-        widget used to parent this control to a layout. Additionally users
-        must attach their widgets to emit the changed signal of this control
-        to properly allow for active form validation.
-        '''
+    @valid.setter
+    def valid(self, value):
+        self.set_property('valid', value)
 
-        raise NotImplementedError()
+    def validate(self):
+        '''Validate this control'''
+        if not self.validators:
+            return
 
-    def _init_widgets(self):
-        '''Binds the widgets returned by init_widgets to self.widget and
-        self.widgets.
-        '''
+        value = self.get_value()
 
-        self.widgets = self.init_widgets()
-        self.widget = self.widgets[0]
+        for v in self.validators:
+            try:
+                v(value)
+            except ValidationError as e:
+                self.valid = False
+                self.errlabel.setText('*' + e.message)
+                return
 
-        self.label = QtGui.QLabel(self.name)
-        if isinstance(self.widget, QtGui.QCheckBox):
-            self.label.setProperty('clickable', True)
-            self.label.setAlignment(
-                QtCore.Qt.AlignRight |
-                QtCore.Qt.AlignVCenter)
-            def _mousePressEvent(event):
-                self.widget.toggle()
-            self.label.mousePressEvent = _mousePressEvent
-
-        self.widgets = tuple(list(self.widgets) + [self.label])
-
-        if self.label_on_top:
-            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
-        else:
-            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.widget)
-
-        self.main_widget = QtGui.QWidget()
-        self.main_widget.setLayout(self.layout)
-
-    def _init_properties(self):
-        '''Initializes the qt properties on all this controls widgets.'''
-
-        self.properties = deepcopy(self.properties)
-        for p, v in self.properties.iteritems():
-            self.set_property(p, v)
+        if not self.valid:
+            self.valid = True
+            self.errlabel.setText('')
 
     def emit_changed(self, *args):
         self.changed.emit()
-        self.emit_validate()
-
-    def emit_validate(self):
-        self.validate.emit(self)
-
-    def get_value(self):
-        '''Subclasses must implement this method...
-
-        Must return the value of this control. Use the widgets you create in
-        init_widgets, accessible through the widgets attribute after
-        initialization.
-        '''
-
-        raise NotImplementedError()
-
-    def set_value(self, value):
-        '''Subclasses must implement this method...
-
-        Must set the value of this control. Use the widgets you create in
-        init_widgets, accessible through the widgets attribute after
-        initialization.
-        '''
-
-        raise NotImplementedError()
+        self.validate()
 
     def get_property(self, name):
         '''Used to get the value of a property of this control.'''
@@ -183,6 +139,91 @@ class BaseControl(QtCore.QObject):
         for w in self.widgets:
             w.style().unpolish(w)
             w.style().polish(w)
+
+    def init_widgets(self):
+        '''Subclasses must implement this method...
+
+        Used to build the widgets for this control.
+        Must return a tuple of widgets, where the first element is the main
+        widget used to parent this control to a layout. Additionally users
+        must attach their widgets to emit the changed signal of this control
+        to properly allow for active form validation.
+        '''
+
+        raise NotImplementedError()
+
+    def _init_widgets(self):
+        '''Binds the widgets returned by init_widgets to self.widget and
+        self.widgets.
+        '''
+
+        self.widgets = self.init_widgets()
+        self.widget = self.widgets[0]
+
+        self.errlabel = QtGui.QLabel()
+        self.errlabel.setFixedHeight(14)
+        self.errlabel.setProperty('err', True)
+        self.errlabel.setAlignment(QtCore.Qt.AlignTop)
+
+        self.label = QtGui.QLabel(self.name)
+        if isinstance(self.widget, QtGui.QCheckBox):
+            self.label.setProperty('clickable', True)
+            self.label.setAlignment(
+                QtCore.Qt.AlignRight |
+                QtCore.Qt.AlignVCenter)
+            def _mousePressEvent(event):
+                self.widget.toggle()
+                self.emit_changed()
+            self.label.mousePressEvent = _mousePressEvent
+
+        self.widgets = tuple(list(self.widgets) + [self.label])
+
+        if self.label_on_top:
+            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+        else:
+            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.label)
+        self.clayout = QtGui.QVBoxLayout()
+        self.clayout.setContentsMargins(0, 0, 0, 0)
+        self.clayout.setSpacing(0)
+        self.clayout.addWidget(self.widget)
+        self.clayout.addWidget(self.errlabel)
+        self.layout.addLayout(self.clayout)
+
+        if not self.labeled:
+            self.label.hide()
+
+        self.main_widget = QtGui.QWidget()
+        self.main_widget.setLayout(self.layout)
+
+    def _init_properties(self):
+        '''Initializes the qt properties on all this controls widgets.'''
+
+        self.properties = deepcopy(self.properties)
+        for p, v in self.properties.iteritems():
+            self.set_property(p, v)
+
+    def get_value(self):
+        '''Subclasses must implement this method...
+
+        Must return the value of this control. Use the widgets you create in
+        init_widgets, accessible through the widgets attribute after
+        initialization.
+        '''
+
+        raise NotImplementedError()
+
+    def set_value(self, value):
+        '''Subclasses must implement this method...
+
+        Must set the value of this control. Use the widgets you create in
+        init_widgets, accessible through the widgets attribute after
+        initialization.
+        '''
+
+        raise NotImplementedError()
 
 
 class SpinControl(BaseControl):

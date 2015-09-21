@@ -3,68 +3,7 @@ import math
 import os
 from functools import partial
 from . import resource
-
-
-class CompositeFormWidget(QtGui.QWidget):
-    '''Base Widget class, used to contain all field controls and groups.'''
-
-    def __init__(self, layout_horizontal=False, parent=None):
-        super(CompositeFormWidget, self).__init__(parent)
-        self.layout = QtGui.QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-
-        if layout_horizontal:
-            self.form_layout = QtGui.QHBoxLayout()
-        else:
-            self.form_layout = QtGui.QVBoxLayout()
-        self.form_layout.setContentsMargins(0, 0, 0, 0)
-        self.form_layout.setSpacing(0)
-
-        self.layout.addLayout(self.form_layout)
-        self.setLayout(self.layout)
-
-        self.forms = []
-        self.header = None
-
-    def __getattr__(self, attr):
-        try:
-            super(Form)
-        for form in self.forms:
-            try:
-                return getattr(form, attr)
-            except AttributeError:
-                raise AttributeError('Widget has no attr: {}'.format(attr))
-
-    def get_property(self, name):
-        form_data = {}
-
-        for form in self.forms:
-            form_data.update(form.get_property(name))
-
-        return form_data
-
-    @property
-    def valid(self):
-        return all([form.valid for form in self.forms])
-
-    def get_value(self):
-        '''Get the values of all the controls'''
-
-        data = {}
-
-        for form in self.forms:
-            data.update(form.get_value())
-
-        return data
-
-    def set_value(self, **data):
-        '''Set the value of all the controls'''
-
-        for form in self.forms:
-            for name, control in controls:
-                if name in data:
-                    control.set_value(data[name])
+from .exc import *
 
 
 class ControlLayout(QtGui.QGridLayout):
@@ -106,7 +45,7 @@ class ControlLayout(QtGui.QGridLayout):
         count = self.count
         row = math.floor(count / self.columns)
         column = (count % self.columns)
-        super(FormLayout, self).addWidget(widget, row, column)
+        super(ControlLayout, self).addWidget(widget, row, column)
         self.widgets.append(widget)
 
 
@@ -116,9 +55,8 @@ class FormWidget(QtGui.QWidget):
         super(FormWidget, self).__init__(parent)
 
         self.name = name
-        self.controls = []
-        self.forms = []
-        self.columns = columns
+        self.controls = {}
+        self.forms = {}
         self.parent = parent
 
         self.layout = QtGui.QVBoxLayout()
@@ -127,9 +65,9 @@ class FormWidget(QtGui.QWidget):
         self.setLayout(self.layout)
 
         if layout_horizontal:
-            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
-        else:
             self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+        else:
+            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
         self.form_layout.setContentsMargins(0, 0, 0, 0)
         self.form_layout.setSpacing(0)
 
@@ -140,60 +78,92 @@ class FormWidget(QtGui.QWidget):
         self.setProperty('form', True)
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
 
-    def get_property(self, name):
-        form_data = {}
-        for name, control in self.controls.iteritems():
-            form_data[name] = control.get_property(name)
-        return form_data
-
     @property
     def valid(self):
-        for name, control in self.controls.iteritems():
-            self.validate_control(control)
-        return all(self.get_property('valid').values())
+        is_valid = []
 
-    def get_value(self):
+        for name, control in self.controls.iteritems():
+            control.validate()
+            is_valid.append(control.valid)
+
+        for name, form in self.forms.iteritems():
+            is_valid.append(form.valid)
+
+        return all(is_valid)
+
+    def get_value(self, flatten=False):
+        '''Get the value of this forms fields and subforms fields.
+
+        :param flatten: If set to True, return a flattened dict
+        '''
+
         form_data = {}
         for name, control in self.controls.iteritems():
             form_data[name] = control.get_value()
 
+        for name, form in self.forms.iteritems():
+            form_value = form.get_value(flatten=flatten)
+            if flatten:
+                form_data.update(form_value)
+            else:
+                form_data[name] = form_value
+
         return form_data
 
-    def set_value(self, **data):
+    def set_value(self, strict=True, **data):
+        '''Set the value of all the forms subforms and fields. You can pass
+        an additional keyword argument strict to False to ignore mismatched
+        names and subforms.
+
+        :param strict: raise exceptions for any invalid names in data
+        :param data: Field data used to set the values of the form
+
+        usage::
+
+            myform.set_value(
+                strict=True,
+                **{
+                    'strfield': 'ABCDEFG',
+                    'intfield': 1,
+                    'subform': {
+                        'subform_strfield': 'BCDEFGH',
+                        'subform_intfield': 2,}},
+            )
+        '''
         for name, value in data.iteritems():
+
+            if isinstance(value, dict):
+                try:
+                    self.forms[name].set_value(**value)
+                except KeyError:
+                    if strict:
+                        raise FormNotFound(name + ' does not exist')
+                continue
+
             try:
                 self.controls[name].set_value(value)
             except KeyError:
-                raise FieldNotFound(name + ' does not exist')
-
-    def validate_control(self, control):
-        for v in control.validators:
-            value = control.get_value()
-            try:
-                v(value)
-            except ValidationError as err:
-                control.set_property('valid', False)
-        if not control.property('valid'):
-            control.set_property('valid', True)
+                if strict:
+                    raise FieldNotFound(name + ' does not exist')
 
     def add_header(self, title, description=None, icon=None):
+        '''Add a header'''
+
         self.header = Header(title, description, icon, self)
         self.layout.insertWidget(0, self.header)
 
     def add_form(self, name, form):
+        '''Add a subform'''
+
         self.form_layout.addWidget(form)
-        self.forms.append(form)
+        self.forms[name] = form
         setattr(self, name, form)
 
     def add_control(self, name, control):
-        count = len(self.controls)
-        column = (count % self.columns)
-        row = math.floor(count / self.columns)
+        '''Add a control'''
 
-        self.layout.addWidget(control.main_widget, row, column)
+        self.control_layout.addWidget(control.main_widget)
         self.controls[name] = control
-        control.validate.connect(self.validate_control)
-
         setattr(self, name, control)
 
 
@@ -228,7 +198,7 @@ class FormDialog(QtGui.QDialog):
             raise AttributeError('FormDialog has no attr: {}'.format(attr))
 
     def on_accept(self):
-        if all(self.widget.valid):
+        if self.widget.valid:
             self.accept()
         return
 

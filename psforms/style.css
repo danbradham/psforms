@@ -24,7 +24,11 @@ QLabel{
     font: 10pt "Arial";
 }
 QLabel[valid='false']{
-    color: rgb(170, 20, 20);
+    color: rgb(203, 40, 40);
+}
+QLabel[err='true']{
+    font: 8pt "Arial";
+    color: rgb(203, 40, 40);
 }
 QLabel[clickable='true']:hover{
     color: rgb(135, 135, 135);
@@ -71,7 +75,7 @@ QComboBox:focus {
 }
 
 QComboBox[valid='false'] {
-    border: 1px solid rgb(170, 20, 20);
+    border: 1px solid rgb(203, 40, 40);
 }
 
 QComboBox::drop-down{
@@ -142,13 +146,13 @@ QDoubleSpinBox:focus {
 
 QSpinBox[valid='false'],
 QDoubleSpinBox[valid='false'] {
-    border: 1px solid rgb(170, 20, 20);
+    border: 1px solid rgb(203, 40, 40);
 }
 
 
 QSpinBox[valid='false']:focus,
 QDoubleSpinBox[valid='false']:focus {
-    border: 1px solid rgb(170, 20, 20);
+    border: 1px solid rgb(203, 40, 40);
 }
 
 QSpinBox:disabled,
@@ -220,11 +224,11 @@ QLineEdit:focus{
 }
 
 QLineEdit[valid='false']{
-    border: 1px solid rgb(170, 20, 20);
+    border: 1px solid rgb(203, 40, 40);
 }
 
 QLineEdit[valid='false']:focus{
-    border: 1px solid rgb(170, 20, 20);
+    border: 1px solid rgb(203, 40, 40);
 }
 
 QLineEdit:disabled{

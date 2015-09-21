@@ -8,7 +8,7 @@ from PySide import QtGui, QtCore
 
 from .fields import FieldType
 from .exc import FieldNotFound
-from .widgets import FormDialog, FormWidget, Header, CompositeFormWidget
+from .widgets import FormDialog, FormWidget, Header
 from .utils import Ordered, itemattrgetter
 
 
@@ -78,36 +78,31 @@ class Form(Ordered):
         return controls
 
     @classmethod
-    def create(cls, parent=None):
-        '''Create a widget for this form using all Field attributes'''
-
-        widget = FormWidget(cls.meta.title, cls.meta.columns, parent)
-        controls = cls._create_controls()
-        for name, control in controls.iteritems():
-            widget.add_control(name, control)
-        return widget
-
-    @classmethod
     def as_widget(cls, parent=None):
         '''Get this form as a widget'''
 
-        container = CompositeFormWidget(cls.meta.layout_horizontal, parent)
+        form_widget = FormWidget(
+            cls.meta.title,
+            cls.meta.columns,
+            cls.meta.layout_horizontal,
+            parent=parent)
 
         if cls.meta.header:
-            container.add_header(
+            form_widget.add_header(
                 cls.meta.title,
                 cls.meta.description,
                 cls.meta.icon
             )
 
         if cls.fields():
-            widget = cls.create(parent)
-            container.add_form(cls.meta.title, widget)
+            controls = cls._create_controls()
+            for name, control in controls.iteritems():
+                form_widget.add_control(name, control)
 
         for name, form in cls.forms():
-            container.add_form(name, form.create(container))
+            form_widget.add_form(name, form.as_widget(form_widget))
 
-        return container
+        return form_widget
 
     @classmethod
     def as_dialog(cls, frameless=False, dim=False, parent=None):

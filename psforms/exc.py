@@ -7,5 +7,8 @@ class FieldNotInstantiated(Exception):
 class FieldNotFound(Exception):
     pass
 
+class FormNotFound(Exception):
+    pass
+
 class ValidationError(Exception):
     pass
