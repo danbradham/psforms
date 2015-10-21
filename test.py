@@ -1,114 +1,117 @@
-import signal
+#!/usr/bin/env python
 import sys
-import os
-from pprint import pprint
-from functools import partial
-from PySide import QtGui, QtCore
+import signal
+import pprint
+from PySide import QtGui
 from pslive import LiveLinker
-from psforms import Form, stylesheet
+from psforms import *
+from psforms.validators import required, email, checked
 from psforms.fields import *
 
-signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+class ValidationTestForm(Form):
+
+    meta = FormMetaData(
+        title='Validation Test Form',
+        description='Test validation styling',
+        header=False,
+    )
+
+    required_str = StringField('Valid String', validators=(required,))
+    valid_email = StringField('Valid Email', validators=(required, email))
 
 
-class SubFormA(Form):
+class ImageTestForm(Form):
 
-    title = 'Sub Form A'
-    labeled = True
-    labels_on_top = False
-    columns = 1
+    meta = FormMetaData(
+        title='Validation Test Form',
+        description='Test validation styling',
+        header=False,
+    )
 
-    int_field = IntField('Integer', range=(-100, 100), default=20)
-    int2_field = Int2Field('Integer2')
-    int_opt_field = IntOptionField('Integer3', options=[0, 1, 2])
-    float_field = FloatField('Float', range=(10, 20))
-    float2_field = Float2Field('Float2')
-    str_field = StringOptionField('StringA', options=['A', 'B', 'C'])
-    strb_field = StringField('StringB', default='B')
-
-
-class SubFormB(Form):
-
-    title = 'Sub Form B'
-    labeled = True
-    labels_on_top = False
-    columns = 3
-
-    bool_field = BoolField('Boolean', default=False)
-    bool_fielda = BoolField('BooleanA', default=False)
-    bool_fieldb = BoolField('BooleanB', default=False)
-    bool_fieldc = BoolField('BooleanC', default=False)
-    bool_fieldd = BoolField('BooleanD', default=False)
-    bool_fielde = BoolField('BooleanE', default=False)
-    bool_fieldf = BoolField('BooleanF', default=False)
-    bool_fieldg = BoolField('BooleanG', default=False)
-    bool_fieldh = BoolField('BooleanH', default=False)
-    bool_fieldi = BoolField('BooleanI', default=False)
-    bool_fieldj = BoolField('BooleanJ', default=False)
-    bool_fieldk = BoolField('BooleanK', default=False)
+    imagefield = ImageField('ImageField')
+    listfield = ListField(
+        'ListField',
+        options=['option' + str(i) for i in xrange(10)],
+    )
 
 
-class MyForm(Form):
+class ControlsTestForm(Form):
 
-    title = 'My Form'
-    description = 'Why hello there, this is a test form'
-    header = True
+    meta = FormMetaData(
+        title='Controls Test Form',
+        columns=2,
+    )
 
-    subforma = SubFormA()
-    subformb = SubFormB()
+    stringfield = StringField('StringField', default='String Field Default')
+    intfield = IntField('IntField')
+    floatfield = FloatField('FloatField')
+    int2field = Int2Field('Int2Field')
+    float2field = Float2Field('Float2Field')
+    intoptionfield = IntOptionField(
+        'IntOptionField',
+        options=['option' + str(i) for i in xrange(10)],
+    )
+    stringoptionfield = StringOptionField(
+        'StringOptionField',
+        options=['option' + str(i) for i in xrange(10)],
+    )
+    filefield = FileField('FileField')
+    folderfield = FolderField('FolderField')
+    savefilefield = SaveFileField('SaveFileField')
+    boolfielda = BoolField('BoolFieldA', validators=(checked,))
+    boolfieldb = BoolField('BoolFieldB')
+    buttonoptionfield = ButtonOptionField(
+        'ButtionOptionField',
+        options='abc',
+    )
+    intbuttonoptionfield = IntButtonOptionField(
+        'IntButtionOptionField',
+        options='xyz',
+    )
+
+
+class VisualTestForm(Form):
+
+    meta = FormMetaData(
+        title='Visual Test Form',
+        description='Stylsheet + widget tests',
+        header=True,
+    )
+
+    image_form = ImageTestForm()
+    controls_form = ControlsTestForm()
+    validation_form = ValidationTestForm()
 
 
 def form_accepted(form):
-    print 'Form Accepted...\n'
-    pprint(form.get_value())
+    def accepted():
+        print 'Form Accepted...\n'
+        pprint.pprint(form.get_value(flatten=True))
+    return accepted
 
 
 def form_rejected(form):
-    print 'Form Rejected...'
+    def rejected():
+        print 'Form Rejected...'
+    return rejected
 
 
-def print_values(form):
-    pprint(form.get_value())
-
-
-def test_stylesheet():
-
-    app = QtGui.QApplication(sys.argv)
-
-    myform = MyForm.as_widget()
-    print_button = QtGui.QPushButton('print')
-    print_button.clicked.connect(partial(print_values, myform))
-
-    w = QtGui.QWidget()
-    l = QtGui.QVBoxLayout()
-    l.setContentsMargins(0, 0, 0, 0)
-    f = QtGui.QHBoxLayout()
-    f.setContentsMargins(20, 20, 20, 20)
-    l.addWidget(myform)
-    l.addLayout(f)
-    f.addWidget(print_button)
-    w.setLayout(l)
-    w.show()
-
-    w.setProperty('form', True) # Add form property to top-level widget
-    w.setStyleSheet(stylesheet) # Apply psforms.stylesheet
-
-    LiveLinker(path=os.path.abspath('psforms/style.css'), parent=w)
-
-    sys.exit(app.exec_())
-
-
-def test_dialog():
+def run_visual_test():
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app = QtGui.QApplication(sys.argv)
+    app.setStyleSheet(stylesheet)
+    dialog = VisualTestForm.as_dialog(frameless=True, dim=True)
+    dialog.accepted.connect(form_accepted(dialog))
+    dialog.rejected.connect(form_rejected(dialog))
+    LiveLinker(path=os.path.abspath('ui_resources/style.css'), parent=app)
 
-    myform = MyForm.as_dialog()
-    myform.accepted.connect(partial(form_accepted, myform))
-    myform.rejected.connect(partial(form_rejected, myform))
-    myform.setStyleSheet(stylesheet) # Apply psforms.stylesheet
-    LiveLinker(path=os.path.abspath('psforms/style.css'), parent=myform)
+    sys.exit(dialog.exec_())
 
-    sys.exit(myform.exec_())
 
 if __name__ == '__main__':
-    test_dialog()
+
+    args = sys.argv
+    if len(args) > 1 and args[1] == '--visual':
+        run_visual_test()

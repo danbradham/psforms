@@ -13,6 +13,7 @@ class ControlLayout(QtGui.QGridLayout):
 
         self._columns = columns
         self.setContentsMargins(20, 20, 20, 20)
+        self.setHorizontalSpacing(20)
         self.setRowStretch(1000, 1)
         self.widgets = []
 
@@ -317,10 +318,10 @@ class IconButton(QtGui.QPushButton):
     :param icon: path to icon file or resource
     :param tip: tooltip text
     :param name: object name
-    :param size: width, height tuple (default: (30, 30))
+    :param size: width, height tuple (default: (32, 32))
     '''
 
-    def __init__(self, icon, tip, name, size=(30, 30), *args, **kwargs):
+    def __init__(self, icon, tip, name, size=(32, 32), *args, **kwargs):
         super(IconButton, self).__init__(*args, **kwargs)
 
         self.setObjectName(name)

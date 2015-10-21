@@ -50,8 +50,8 @@ class FieldType(Ordered):
     field_defaults = {
         'labeled': True,
         'label_on_top': True,
-        'default':None,
-        'validators':None
+        'default': None,
+        'validators': None
     }
     field_keys = ('labeled', 'label_on_top', 'default', 'validators')
 
@@ -99,10 +99,19 @@ def create_fieldtype(clsname, control_cls, control_defaults=None,
     '''
 
     bdicts = [b.__dict__ for b in bases]
+    orig_defaults = get_key('field_defaults', bdicts)
+
+    if field_defaults:
+        defaults = deepcopy(orig_defaults)
+        defaults.update(field_defaults)
+        field_defaults = defaults
+    else:
+        field_defaults = orig_defaults
+
     attrs = {
         'control_cls': control_cls,
         'control_defaults': control_defaults,
-        'field_defaults': field_defaults or get_key('field_defaults', bdicts),
+        'field_defaults': field_defaults,
     }
     return type(clsname, bases, attrs)
 
@@ -110,6 +119,7 @@ def create_fieldtype(clsname, control_cls, control_defaults=None,
 ListField = create_fieldtype(
     'ListField',
     control_cls=controls.ListControl,
+    control_defaults={'options': None}
 )
 
 BoolField = create_fieldtype(
@@ -156,6 +166,18 @@ IntOptionField = create_fieldtype(
 StringOptionField = create_fieldtype(
     'StringOptionField',
     control_cls=controls.StringOptionControl,
+    control_defaults={'options': None},
+)
+
+ButtonOptionField = create_fieldtype(
+    'ButtonOptionField',
+    control_cls=controls.ButtonOptionControl,
+    control_defaults={'options': None},
+)
+
+IntButtonOptionField = create_fieldtype(
+    'IntButtonOptionField',
+    control_cls=controls.IntButtonOptionControl,
     control_defaults={'options': None},
 )
 

@@ -1,0 +1,312 @@
+@import 'constants'
+@import 'compass/utilities/color/contrast'
+
+// Font Family
+
+$font-family: Helvetica, Arial, sans-serif !default
+
+
+// Colors
+
+$primary: rgb(235, 235, 235) !default
+$primary-accent: rgb(135, 135, 135) !default
+$secondary: rgb(45, 45, 45) !default
+$accent: rgb(67, 203, 142) !default
+$accent-contrast: rgb(75, 229, 160) !default
+$error: rgb(203, 40, 40) !default
+
+
+// Style
+
+QDialog,
+QWidget[form='true']
+    background: $primary
+    border: 0
+    margin: 0
+    padding: 0
+
+
+QWidget[header='true']
+    background: $secondary
+    border: 0
+    margin: 0
+    padding: 0
+
+
+QLabel[title='true']
+    color: white
+    font: 24pt "Arial"
+
+
+QLabel[description='true']
+    color: white
+    font: 12pt "Arial"
+
+
+QLabel
+    color: $secondary
+    font: 10pt "Arial"
+
+
+QLabel[valid='false']
+    color: $error
+
+
+QLabel[err='true']
+    font: 8pt "Arial"
+    color: $error
+
+
+QLabel[clickable='true']:hover
+    color: rgb(135, 135, 135)
+    font: 10pt "Arial"
+
+
+QPushButton
+    background: $accent
+    border-radius: 3
+    border: 0
+    color: rgb(255, 255, 255)
+    font: 10pt "Arial"
+    height: 30
+    padding: 0 10 0 10
+
+
+QPushButton:hover
+    background: $accent-contrast
+
+
+QPushButton[flat='true']
+    background: $nocolor
+    border: 0
+
+
+QPushButton:pressed
+    border-bottom: 0px
+    margin-top: 3
+
+
+QComboBox
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1px solid rgb(185, 185, 185)
+    color: $secondary
+    font: 10pt "Arial"
+    outline: none
+    padding-left: 13
+    height: 30
+
+
+QComboBox:focus
+    border: 1px solid $accent
+
+
+QComboBox[valid='false']
+    border: 1px solid $error
+
+
+QComboBox::drop-down
+    background: rgb(255, 255, 255, 0)
+    border-bottom: 0px solid rgb(235,235,235, 0)
+    border-left: 5px solid rgb(255,255,255,0)
+    border-right: 5px solid rgb(255,255,255,0)
+    border-top: 5px solid rgb(185,185,185)
+    margin-bottom: -1px
+    margin-left: 3px
+    margin-right: 3px
+    margin-top: 12px
+
+
+QComboBox QAbstractItemView
+    background-color: rgb(185, 185, 185)
+    border: none
+    color: rgb(110, 110, 110)
+    outline: none
+    selection-background-color: rgb(255, 255, 255)
+
+
+QCheckBox
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1 solid rgb(185, 185, 185)
+    color: $primary
+    height: 30
+    width: 30
+
+
+QCheckBox::indicator
+    background: rgb(255, 255, 255, 0)
+    border-radius: 3
+    height: 10
+    left: 4
+    width: 10
+
+
+QCheckBox::indicator:checked
+    background: $accent
+
+
+QStatusBar
+    background: rgb(185, 185, 185)
+
+
+QSpinBox,
+QDoubleSpinBox
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1px solid rgb(185, 185, 185)
+    color: $secondary
+    font: 10pt "Arial"
+    padding-left: 10
+    height: 30
+
+
+QSpinBox:focus,
+QDoubleSpinBox:focus
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1px solid $accent
+    color: $secondary
+    font: 10pt "Arial"
+    padding-left: 10
+
+
+QSpinBox[valid='false'],
+QDoubleSpinBox[valid='false']
+    border: 1px solid $error
+
+
+
+QSpinBox[valid='false']:focus,
+QDoubleSpinBox[valid='false']:focus
+    border: 1px solid $error
+
+
+QSpinBox:disabled,
+QDoubleSpinBox:disabled
+    background: rgb(55, 55, 55)
+    color: $primary
+    font: 10pt "Arial"
+    padding-left: 10
+
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button
+    background: rgb(255, 255, 255, 0)
+    border-bottom: 5px solid rgb(185,185,185)
+    border-left: 5px solid rgb(255,255,255,0)
+    border-right: 5px solid rgb(255,255,255,0)
+    border-top: 0px solid rgb(235,235,235, 0)
+    margin-bottom: 2px
+    margin-left: 3px
+    margin-right: 3px
+    margin-top: -2px
+    subcontrol-origin: border
+    subcontrol-position: top right
+
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button
+    background: rgb(255, 255, 255, 0)
+    border-bottom: 0px solid rgb(235,235,235, 0)
+    border-left: 5px solid rgb(255,255,255,0)
+    border-right: 5px solid rgb(255,255,255,0)
+    border-top: 5px solid rgb(185,185,185)
+    margin-bottom: -2px
+    margin-left: 3px
+    margin-right: 3px
+    margin-top: 2px
+    subcontrol-origin: border
+    subcontrol-position: bottom right
+
+
+QSpinBox::up-button:disabled,
+QDoubleSpinBox::up-button:disabled
+    background: rgb(55, 55, 55)
+
+
+QSpinBox::down-button:disabled,
+QDoubleSpinBox::down-button:disabled
+    background: rgb(55, 55, 55)
+
+
+QLineEdit
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1px solid rgb(185, 185, 185)
+    color: $secondary
+    font: 10pt "Arial"
+    height: 30
+    padding-left: 10
+
+
+QLineEdit:focus
+    background: rgb(255, 255, 255)
+    border-radius: 3
+    border: 1px solid $accent
+    color: $secondary
+    font: 10pt "Arial"
+    height: 30
+    padding-left: 10
+
+
+QLineEdit[valid='false']
+    border: 1px solid $error
+
+
+QLineEdit[valid='false']:focus
+    border: 1px solid $error
+
+
+QLineEdit:disabled
+    background: rgb(55, 55, 55)
+    border-top: 0
+    color: rgb(200, 200, 200)
+    font: 10pt "Arial"
+    height: 30
+    padding: 0
+
+
+QGroupBox
+    border: 1px solid $secondary
+    color: rgb(235,235,235)
+    font: 12pt "Arial"
+    margin-top: 1ex
+
+
+QGroupBox::title
+    padding: 0 3px
+    subcontrol-origin: margin
+    subcontrol-position: top left
+
+
+QGroupBox::title:hover
+    color: white
+    padding: 0 3px
+    subcontrol-origin: margin
+    subcontrol-position: top left
+
+
+QGroupBox[unfolded='false']::indicator
+    height: 12px
+    image: url(:icons/plus)
+    width: 12px
+
+
+QGroupBox[unfolded='false']::indicator::hover
+    height: 12px
+    image: url(:icons/plus_hover)
+    width: 12px
+
+
+QGroupBox[unfolded='true']::indicator
+    height: 12px
+    image: url(:icons/minus)
+    width: 12px
+
+
+QGroupBox[unfolded='true']::indicator::hover
+    height: 12px
+    image: url(:icons/minus_hover)
+    width: 12px
+

@@ -16,6 +16,12 @@ def regex(rstr, msg='Does not match regex'):
     return check_string
 
 
+def checked(value):
+    if not value:
+        raise ValidationError('Must be checked')
+    return True
+
+
 def email(value):
     r = re.compile(r'^[\w\d!#$%^&*(){\-_}|]+@[\w\d\-_]+[.][a-z]{2,4}')
     match = r.search(value)

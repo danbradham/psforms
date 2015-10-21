@@ -20,7 +20,7 @@ class FormMetaData(object):
         icon=None,
         header=False,
         columns=1,
-        label=True,
+        labeled=True,
         labels_on_top=True,
         layout_horizontal=False,
     )
@@ -33,6 +33,7 @@ class FormMetaData(object):
 class Form(Ordered):
 
     meta = FormMetaData()
+    _max_width = None
 
     @classmethod
     def fields(cls):
@@ -55,24 +56,26 @@ class Form(Ordered):
         return sorted(cls_forms, key=itemattrgetter(1, '_order'))
 
     @classmethod
+    def max_width(cls):
+        if not cls._max_width:
+            # Get the width of the maximum length label
+            _max_label = max([y.nice_name for x, y in cls.fields()], key=len)
+            _label = QtGui.QLabel(_max_label)
+            cls._max_width = _label.sizeHint().width() + 10
+        return cls._max_width
+
+    @classmethod
     def _create_controls(cls):
         '''Create and return controls from Field objects.'''
 
         controls = OrderedDict()
-
-        fields = cls.fields()
-
-        # Get the width of the maximum length label
-        _max_label = max([y.nice_name for x, y in fields], key=len)
-        _label = QtGui.QLabel(_max_label)
-        max_width = _label.sizeHint().width() + 10
 
         for name, field in cls.fields():
             control = field.create()
             control.setObjectName(name)
             labeled = field.labeled or cls.meta.labeled
             label_on_top = field.label_on_top or cls.meta.labels_on_top
-            control.label.setFixedWidth(max_width)
+            control.label.setFixedWidth(cls.max_width())
             controls[name] = control
 
         return controls
