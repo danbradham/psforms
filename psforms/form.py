@@ -113,10 +113,11 @@ class Form(Ordered):
 
         dialog = FormDialog(cls.as_widget(), parent=parent)
         dialog.setWindowTitle(cls.meta.title)
-        window_flags = QtCore.Qt.WindowStaysOnTopHint
-        if frameless:
-            window_flags |= QtCore.Qt.FramelessWindowHint
-        dialog.setWindowFlags(window_flags)
+        if not parent:
+            window_flags = QtCore.Qt.WindowStaysOnTopHint
+            if frameless:
+                window_flags |= QtCore.Qt.FramelessWindowHint
+            dialog.setWindowFlags(window_flags)
 
         if dim: # Dim all monitors when showing the dialog
             def _bg_widgets():

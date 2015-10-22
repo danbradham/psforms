@@ -232,14 +232,15 @@ class SpinControl(BaseControl):
     widget_cls = QtGui.QSpinBox
 
     def __init__(self, name, range=None, *args, **kwargs):
+        self.range = range
         super(SpinControl, self).__init__(name, *args, **kwargs)
-        if range:
-            self.widget.setRange(*range)
 
     def init_widgets(self):
         sb = self.widget_cls(parent=self.parent())
         sb.setFixedHeight(30)
         sb.valueChanged.connect(self.emit_changed)
+        if self.range:
+            sb.setRange(*self.range)
         return (sb,)
 
     def get_value(self):
@@ -254,11 +255,9 @@ class Spin2Control(BaseControl):
     widget_cls = QtGui.QSpinBox
 
     def __init__(self, name, range1=None, range2=None, *args, **kwargs):
+        self.range1 = range1
+        self.range2 = range2
         super(Spin2Control, self).__init__(name, *args, **kwargs)
-        if range1:
-            self.widgets[1].setRange(*range1)
-        if range2:
-            self.widgets[2].setRange(*range2)
 
     def init_widgets(self):
 
@@ -268,6 +267,10 @@ class Spin2Control(BaseControl):
         sb2 = self.widget_cls(parent=self.parent())
         sb2.setFixedHeight(30)
         sb2.valueChanged.connect(self.emit_changed)
+        if self.range1:
+            sb1.setRange(*self.range1)
+        if self.range2:
+            sb2.setRange(*self.range2)
 
         w = QtGui.QWidget()
         w.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -313,14 +316,17 @@ class OptionControl(BaseControl):
     def __init__(self, name, options=None, *args, **kwargs):
         super(OptionControl, self).__init__(name, *args, **kwargs)
         if options:
-            self.widget.clear()
-            self.widget.addItems(options)
+            self.set_options(options)
 
     def init_widgets(self):
 
         c = QtGui.QComboBox(parent=self.parent())
         c.activated.connect(self.emit_changed)
         return (c,)
+
+    def set_options(self, options):
+        self.widget.clear()
+        self.widget.addItems(options)
 
     def get_data(self):
         return self.widget.itemData(
