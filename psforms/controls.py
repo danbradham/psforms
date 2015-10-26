@@ -183,9 +183,13 @@ class BaseControl(QtCore.QObject):
         else:
             self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
 
+        self.grid = QtGui.QGridLayout()
+        self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setSpacing(10)
+        self.grid.addWidget(self.widget, 1, 1)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.label)
-        self.layout.addWidget(self.widget)
+        self.layout.addLayout(self.grid)
         self.vlayout = QtGui.QVBoxLayout()
         self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.vlayout.setSpacing(0)
