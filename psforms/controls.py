@@ -441,7 +441,7 @@ class StringControl(BaseControl):
 
     def init_widgets(self):
         le = QtGui.QLineEdit(parent=self.parent())
-        le.textChanged.connect(self.emit_changed)
+        le.textEdited.connect(self.emit_changed)
         return (le,)
 
     def get_value(self):
@@ -464,7 +464,7 @@ class BrowseControl(BaseControl):
 
         le = QtGui.QLineEdit(parent=self.parent())
         le.setProperty('browse', True)
-        le.textChanged.connect(self.emit_changed)
+        le.textEdited.connect(self.emit_changed)
         b = IconButton(
             icon=':/icons/browse_hover',
             tip='Browse',
