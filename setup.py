@@ -28,7 +28,7 @@ if sys.argv[-1] == 'cheeseit!':
     sys.exit()
 
 elif sys.argv[-1] == 'testit!':
-    os.system('python setup.py sdist upload -r test')
+    os.system('python setup.py sdist upload -r pypitest')
     sys.exit()
 
 with open("README.rst") as f:
