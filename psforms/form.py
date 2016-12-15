@@ -3,12 +3,10 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-from operator import attrgetter
-from PySide import QtGui, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 
 from .fields import FieldType
-from .exc import FieldNotFound
-from .widgets import FormDialog, FormWidget, Header
+from .widgets import FormDialog, FormWidget
 from .utils import Ordered, itemattrgetter
 
 
@@ -60,7 +58,7 @@ class Form(Ordered):
         if not cls._max_width:
             # Get the width of the maximum length label
             _max_label = max([y.nice_name for x, y in cls.fields()], key=len)
-            _label = QtGui.QLabel(_max_label)
+            _label = QtWidgets.QLabel(_max_label)
             cls._max_width = _label.sizeHint().width() + 10
         return cls._max_width
 
@@ -119,16 +117,16 @@ class Form(Ordered):
                 window_flags |= QtCore.Qt.FramelessWindowHint
             dialog.setWindowFlags(window_flags)
 
-        if dim: # Dim all monitors when showing the dialog
+        if dim:  # Dim all monitors when showing the dialog
             def _bg_widgets():
-                qapp = QtGui.QApplication.instance()
+                qapp = QtWidgets.QApplication.instance()
                 desktop = qapp.desktop()
                 screens = desktop.screenCount()
                 widgets = []
 
                 for i in xrange(screens):
                     geo = desktop.screenGeometry(i)
-                    w = QtGui.QWidget()
+                    w = QtWidgets.QWidget()
                     w.setGeometry(geo)
                     w.setStyleSheet('QWidget {background:black}')
                     w.setWindowOpacity(0.3)
@@ -137,13 +135,16 @@ class Form(Ordered):
                 def show():
                     for w in widgets:
                         w.show()
+
                 def hide():
                     for w in widgets:
                         w.hide()
+
                 return show, hide
 
             old_exec = dialog.exec_
             old_show = dialog.show
+
             def _exec_(*args, **kwargs):
                 bgshow, bghide = _bg_widgets()
                 bgshow()

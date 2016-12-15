@@ -20,6 +20,7 @@ def get_info(pyfile):
 
     return info
 
+
 info = get_info('psforms/__init__.py')
 
 
@@ -58,4 +59,5 @@ setup(
         "Programming Language :: Python",
         'Programming Language :: Python :: 2',
     ),
+    install_requires=['Qt.py'],
 )

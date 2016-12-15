@@ -13,7 +13,7 @@ whenever the value is changed by user interaction.
 
 import os
 from copy import deepcopy
-from PySide import QtGui, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 from . import resource
 from .widgets import ScalingImage, IconButton
 from .exc import ValidationError
@@ -82,9 +82,9 @@ class BaseControl(QtCore.QObject):
     def label_on_top(self, value):
         self._label_on_top = value
         if self._label_on_top:
-            self.layout.setDirection(QtGui.QBoxLayout.TopToBottom)
+            self.layout.setDirection(QtWidgets.QBoxLayout.TopToBottom)
         else:
-            self.layout.setDirection(QtGui.QBoxLayout.LeftToRight)
+            self.layout.setDirection(QtWidgets.QBoxLayout.LeftToRight)
 
     @property
     def valid(self):
@@ -160,37 +160,43 @@ class BaseControl(QtCore.QObject):
         self.widgets = self.init_widgets()
         self.widget = self.widgets[0]
 
-        self.errlabel = QtGui.QLabel()
+        self.errlabel = QtWidgets.QLabel()
         self.errlabel.setFixedHeight(14)
         self.errlabel.setProperty('err', True)
 
-        self.label = QtGui.QLabel(self.name)
-        if isinstance(self.widget, QtGui.QCheckBox):
+        self.label = QtWidgets.QLabel(self.name)
+        if isinstance(self.widget, QtWidgets.QCheckBox):
             self.label.setProperty('clickable', True)
             self.label.setAlignment(
                 QtCore.Qt.AlignRight |
                 QtCore.Qt.AlignVCenter)
+
             def _mousePressEvent(event):
                 self.widget.toggle()
                 self.emit_changed()
+
             self.label.mousePressEvent = _mousePressEvent
             self.errlabel.setAlignment(QtCore.Qt.AlignRight)
 
         self.widgets = tuple(list(self.widgets) + [self.label])
 
         if self.label_on_top:
-            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+            self.layout = QtWidgets.QBoxLayout(
+                QtWidgets.QBoxLayout.TopToBottom
+            )
         else:
-            self.layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+            self.layout = QtWidgets.QBoxLayout(
+                QtWidgets.QBoxLayout.LeftToRight
+            )
 
-        self.grid = QtGui.QGridLayout()
+        self.grid = QtWidgets.QGridLayout()
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setSpacing(10)
         self.grid.addWidget(self.widget, 1, 1)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.label)
         self.layout.addLayout(self.grid)
-        self.vlayout = QtGui.QVBoxLayout()
+        self.vlayout = QtWidgets.QVBoxLayout()
         self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.vlayout.setSpacing(0)
         self.vlayout.addStretch()
@@ -200,7 +206,7 @@ class BaseControl(QtCore.QObject):
         if not self.labeled:
             self.label.hide()
 
-        self.main_widget = QtGui.QWidget()
+        self.main_widget = QtWidgets.QWidget()
         self.main_widget.setLayout(self.vlayout)
 
     def _init_properties(self):
@@ -233,7 +239,7 @@ class BaseControl(QtCore.QObject):
 
 class SpinControl(BaseControl):
 
-    widget_cls = QtGui.QSpinBox
+    widget_cls = QtWidgets.QSpinBox
 
     def __init__(self, name, range=None, *args, **kwargs):
         self.range = range
@@ -256,7 +262,7 @@ class SpinControl(BaseControl):
 
 class Spin2Control(BaseControl):
 
-    widget_cls = QtGui.QSpinBox
+    widget_cls = QtWidgets.QSpinBox
 
     def __init__(self, name, range1=None, range2=None, *args, **kwargs):
         self.range1 = range1
@@ -276,9 +282,9 @@ class Spin2Control(BaseControl):
         if self.range2:
             sb2.setRange(*self.range2)
 
-        w = QtGui.QWidget()
+        w = QtWidgets.QWidget()
         w.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        l = QtGui.QHBoxLayout()
+        l = QtWidgets.QHBoxLayout()
         l.setSpacing(20)
         l.setContentsMargins(0, 0, 0, 0)
         l.addWidget(sb1)
@@ -297,22 +303,22 @@ class Spin2Control(BaseControl):
 
 class IntControl(SpinControl):
 
-    widget_cls = QtGui.QSpinBox
+    widget_cls = QtWidgets.QSpinBox
 
 
 class Int2Control(Spin2Control):
 
-    widget_cls = QtGui.QSpinBox
+    widget_cls = QtWidgets.QSpinBox
 
 
 class FloatControl(SpinControl):
 
-    widget_cls = QtGui.QDoubleSpinBox
+    widget_cls = QtWidgets.QDoubleSpinBox
 
 
 class Float2Control(Spin2Control):
 
-    widget_cls = QtGui.QDoubleSpinBox
+    widget_cls = QtWidgets.QDoubleSpinBox
 
 
 class OptionControl(BaseControl):
@@ -324,7 +330,7 @@ class OptionControl(BaseControl):
 
     def init_widgets(self):
 
-        c = QtGui.QComboBox(parent=self.parent())
+        c = QtWidgets.QComboBox(parent=self.parent())
         c.activated.connect(self.emit_changed)
         return (c,)
 
@@ -351,7 +357,7 @@ class IntOptionControl(OptionControl):
 
     def init_widgets(self):
 
-        c = QtGui.QComboBox(parent=self.parent())
+        c = QtWidgets.QComboBox(parent=self.parent())
         c.activated.connect(self.emit_changed)
         return (c,)
 
@@ -369,9 +375,9 @@ class ButtonOptionControl(BaseControl):
         super(ButtonOptionControl, self).__init__(name, *args, **kwargs)
 
     def init_widgets(self):
-        w = QtGui.QWidget()
+        w = QtWidgets.QWidget()
         w.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        l = QtGui.QHBoxLayout()
+        l = QtWidgets.QHBoxLayout()
         l.setSpacing(20)
         w.setLayout(l)
 
@@ -384,21 +390,21 @@ class ButtonOptionControl(BaseControl):
                 self.emit_changed()
             return do_press
 
-        self.button_group = QtGui.QButtonGroup()
+        self.button_group = QtWidgets.QButtonGroup()
         self.button_group.buttonClicked.connect(group_changed)
 
         for i, opt in enumerate(self.options):
-            c = QtGui.QCheckBox(self.parent())
+            c = QtWidgets.QCheckBox(self.parent())
             if i == 0:
                 c.setChecked(True)
             c.setFixedSize(20, 20)
 
-            cl = QtGui.QLabel(opt)
+            cl = QtWidgets.QLabel(opt)
             cl.setProperty('clickable', True)
             cl.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             cl.mousePressEvent = press_button(i)
 
-            bl = QtGui.QHBoxLayout()
+            bl = QtWidgets.QHBoxLayout()
             bl.setSpacing(5)
             bl.addWidget(cl)
             bl.addWidget(c)
@@ -425,7 +431,7 @@ class IntButtonOptionControl(ButtonOptionControl):
 class BoolControl(BaseControl):
 
     def init_widgets(self):
-        c = QtGui.QCheckBox(parent=self.parent())
+        c = QtWidgets.QCheckBox(parent=self.parent())
         c.setFixedSize(20, 20)
         c.clicked.connect(self.emit_changed)
         return (c, )
@@ -440,7 +446,7 @@ class BoolControl(BaseControl):
 class StringControl(BaseControl):
 
     def init_widgets(self):
-        le = QtGui.QLineEdit(parent=self.parent())
+        le = QtWidgets.QLineEdit(parent=self.parent())
         le.textEdited.connect(self.emit_changed)
         return (le,)
 
@@ -453,7 +459,7 @@ class StringControl(BaseControl):
 
 class BrowseControl(BaseControl):
 
-    browse_method = QtGui.QFileDialog.getOpenFileName
+    browse_method = QtWidgets.QFileDialog.getOpenFileName
 
     def __init__(self, name, caption=None, filters=None, *args, **kwargs):
         super(BrowseControl, self).__init__(name, *args, **kwargs)
@@ -462,7 +468,7 @@ class BrowseControl(BaseControl):
 
     def init_widgets(self):
 
-        le = QtGui.QLineEdit(parent=self.parent())
+        le = QtWidgets.QLineEdit(parent=self.parent())
         le.setProperty('browse', True)
         le.textEdited.connect(self.emit_changed)
         b = IconButton(
@@ -473,8 +479,8 @@ class BrowseControl(BaseControl):
         b.setProperty('browse', True)
         b.clicked.connect(self.browse)
 
-        w = QtGui.QWidget(parent=self.parent())
-        l = QtGui.QGridLayout()
+        w = QtWidgets.QWidget(parent=self.parent())
+        l = QtWidgets.QGridLayout()
         l.setContentsMargins(0, 0, 0, 0)
         l.setSpacing(0)
         l.setColumnStretch(0, 1)
@@ -505,7 +511,7 @@ class BrowseControl(BaseControl):
             caption=self.caption,
             dir=self.basedir)
         if value:
-            if self.browse_method is QtGui.QFileDialog.getExistingDirectory:
+            if self.browse_method is QtWidgets.QFileDialog.getExistingDirectory:
                 self.set_value(value)
                 return
             self.set_value(value[0])
@@ -513,29 +519,29 @@ class BrowseControl(BaseControl):
 
 class FileControl(BrowseControl):
 
-    browse_method = QtGui.QFileDialog.getOpenFileName
+    browse_method = QtWidgets.QFileDialog.getOpenFileName
 
 
 class FolderControl(BrowseControl):
 
-    browse_method = QtGui.QFileDialog.getExistingDirectory
+    browse_method = QtWidgets.QFileDialog.getExistingDirectory
 
 
 class SaveFileControl(BrowseControl):
 
-    browse_method = QtGui.QFileDialog.getSaveFileName
+    browse_method = QtWidgets.QFileDialog.getSaveFileName
 
 
 class ImageControl(BaseControl):
 
     def init_widgets(self):
-        w = QtGui.QWidget(parent=self.parent())
+        w = QtWidgets.QWidget(parent=self.parent())
         i = ScalingImage(parent=w)
         f = FileControl(self.name + '_line', parent=w)
         f.changed.connect(self.emit_changed)
         self.file_control = f
 
-        l = QtGui.QVBoxLayout()
+        l = QtWidgets.QVBoxLayout()
         l.setContentsMargins(0, 0, 0, 0)
         l.setSpacing(10)
         l.addWidget(i)
@@ -552,7 +558,7 @@ class ImageControl(BaseControl):
         return self.file_control.get_value()
 
     def set_value(self, value):
-        if QtGui.QFile.exists(value):
+        if QtCore.QFile.exists(value):
             self.file_control.set_value(value)
 
 
@@ -564,12 +570,12 @@ class ListControl(BaseControl):
             self.widget.addItems(options)
 
     def init_widgets(self):
-        l = QtGui.QListWidget()
+        l = QtWidgets.QListWidget()
         l.itemSelectionChanged.connect(self.emit_changed)
         return (l,)
 
     def add_item(self, label, icon=None, data=None):
-        item_widget = QtGui.QListWidgetItem()
+        item_widget = QtWidgets.QListWidgetItem()
         if icon:
             item_widget.setIcon(QtGui.QIcon(icon))
         if data:
@@ -577,7 +583,7 @@ class ListControl(BaseControl):
         self.widget.addItem(item_widget)
 
     def get_data(self):
-        ''':return: Data for selected items in :class:`QtGui.QListWidget`
+        ''':return: Data for selected items in :class:`QtWidgets.QListWidget`
         :rtype: list'''
         items = self.widget.selectedItems()
         items_data = []
@@ -586,7 +592,7 @@ class ListControl(BaseControl):
         return items_data
 
     def get_value(self):
-        ''':return: Value of the underlying :class:`QtGui.QTreeWidget`
+        ''':return: Value of the underlying :class:`QtWidgets.QTreeWidget`
         :rtype: str'''
 
         items = self.widget.selectedItems()

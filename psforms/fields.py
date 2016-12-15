@@ -66,7 +66,7 @@ class FieldType(Ordered):
             self.control_kwargs[key] = value
             setattr(self, key, value)
 
-        if self.control_defaults: # If the control has defaults, get em
+        if self.control_defaults:  # If the control has defaults, get em
             for key in self.control_defaults.iterkeys():
                 value = get_key(key, (kwargs, self.control_defaults), None)
                 if value:

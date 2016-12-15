@@ -1,4 +1,4 @@
-from PySide import QtGui, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 import math
 import os
 from functools import partial
@@ -6,7 +6,7 @@ from . import resource
 from .exc import *
 
 
-class ControlLayout(QtGui.QGridLayout):
+class ControlLayout(QtWidgets.QGridLayout):
 
     def __init__(self, columns=1, parent=None):
         super(ControlLayout, self).__init__(parent)
@@ -35,7 +35,7 @@ class ControlLayout(QtGui.QGridLayout):
         return len(self.widgets)
 
     def takeWidget(self, widget):
-        if not widget in self.widgets:
+        if widget not in self.widgets:
             return None
 
         self.widgets.pop(self.widgets.index(widget))
@@ -50,7 +50,7 @@ class ControlLayout(QtGui.QGridLayout):
         self.widgets.append(widget)
 
 
-class FormWidget(QtGui.QWidget):
+class FormWidget(QtWidgets.QWidget):
 
     def __init__(self, name, columns=1, layout_horizontal=False, parent=None):
         super(FormWidget, self).__init__(parent)
@@ -60,15 +60,19 @@ class FormWidget(QtGui.QWidget):
         self.forms = {}
         self.parent = parent
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
         if layout_horizontal:
-            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+            self.form_layout = QtWidgets.QBoxLayout(
+                QtWidgets.QBoxLayout.LeftToRight
+            )
         else:
-            self.form_layout = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom)
+            self.form_layout = QtWidgets.QBoxLayout(
+                QtWidgets.QBoxLayout.TopToBottom
+            )
         self.form_layout.setContentsMargins(0, 0, 0, 0)
         self.form_layout.setSpacing(0)
 
@@ -168,23 +172,23 @@ class FormWidget(QtGui.QWidget):
         setattr(self, name, control)
 
 
-class FormDialog(QtGui.QDialog):
+class FormDialog(QtWidgets.QDialog):
 
     def __init__(self, widget, *args, **kwargs):
         super(FormDialog, self).__init__(*args, **kwargs)
 
         self.widget = widget
-        self.cancel_button = QtGui.QPushButton('&cancel')
-        self.accept_button = QtGui.QPushButton('&accept')
+        self.cancel_button = QtWidgets.QPushButton('&cancel')
+        self.accept_button = QtWidgets.QPushButton('&accept')
         self.cancel_button.clicked.connect(self.reject)
         self.accept_button.clicked.connect(self.on_accept)
 
-        self.layout = QtGui.QGridLayout()
+        self.layout = QtWidgets.QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setRowStretch(0, 1)
         self.setLayout(self.layout)
 
-        self.button_layout = QtGui.QHBoxLayout()
+        self.button_layout = QtWidgets.QHBoxLayout()
         self.button_layout.setContentsMargins(20, 20, 20, 20)
         self.button_layout.addWidget(self.cancel_button)
         self.button_layout.addWidget(self.accept_button)
@@ -204,23 +208,23 @@ class FormDialog(QtGui.QDialog):
         return
 
 
-class Header(QtGui.QWidget):
+class Header(QtWidgets.QWidget):
 
     def __init__(self, title, description=None, icon=None, parent=None):
         super(Header, self).__init__(parent)
 
-        self.grid = QtGui.QGridLayout()
+        self.grid = QtWidgets.QGridLayout()
 
         self.setLayout(self.grid)
 
-        self.title = QtGui.QLabel(title)
+        self.title = QtWidgets.QLabel(title)
         self.title.setProperty('title', True)
         if description:
-            self.descr = QtGui.QLabel(description)
+            self.descr = QtWidgets.QLabel(description)
             self.descr.setProperty('description', True)
             self.descr.setAlignment(QtCore.Qt.AlignCenter)
         if icon:
-            self.icon = QtGui.QLabel()
+            self.icon = QtWidgets.QLabel()
             self.icon.setPixmap(icon)
             self.grid.addWidget(self.icon, 0, 0)
             self.grid.addWidget(self.title, 0, 1)
@@ -262,7 +266,7 @@ class Header(QtGui.QWidget):
         super(Header, self).mouseReleaseEvent(event)
 
 
-class ScalingImage(QtGui.QLabel):
+class ScalingImage(QtWidgets.QLabel):
 
     __images = {}
 
@@ -272,11 +276,11 @@ class ScalingImage(QtGui.QLabel):
         if not image:
             image = ':/images/noimg'
         self.set_image(image)
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding,
-                           QtGui.QSizePolicy.Expanding)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                           QtWidgets.QSizePolicy.Expanding)
 
     def set_image(self, image):
-        if not image in self.images:
+        if image not in self.images:
             if not isinstance(image, QtGui.QImage):
                 if not QtCore.QFile.exists(image):
                     return
@@ -308,11 +312,11 @@ class ScalingImage(QtGui.QLabel):
 
         offsetX = -((self.pixmap.width() - self.width())*0.5)
         offsetY = -((self.pixmap.height() - self.height())*0.5)
-        painter = QtGui.QPainter(self)
+        painter = QtWidgets.QPainter(self)
         painter.drawPixmap(offsetX, offsetY, self.pixmap)
 
 
-class IconButton(QtGui.QPushButton):
+class IconButton(QtWidgets.QPushButton):
     '''A button with an icon.
 
     :param icon: path to icon file or resource
@@ -328,8 +332,8 @@ class IconButton(QtGui.QPushButton):
         self.setIcon(QtGui.QIcon(icon))
         self.setIconSize(QtCore.QSize(*size))
         self.setSizePolicy(
-            QtGui.QSizePolicy.Fixed,
-            QtGui.QSizePolicy.Fixed)
+            QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Fixed)
         self.setFixedHeight(size[0])
         self.setFixedWidth(size[1])
         self.setToolTip(tip)
