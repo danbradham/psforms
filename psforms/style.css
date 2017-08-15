@@ -50,6 +50,7 @@ QPushButton[browse='true']{
     border-bottom-left-radius: 0;
 }
 
+
 QPushButton:hover{
     background: rgb(75, 229, 160);
 }
@@ -62,6 +63,27 @@ QPushButton[flat='true']{
 QPushButton:pressed{
     border-bottom: 0px;
     margin-top: 3;
+}
+
+QPushButton[grouptitle='true']{
+    background: rgb(235, 235, 235);
+    color: rgb(45, 45, 45);
+    border: 0;
+    margin: 0;
+    padding: 0;
+    padding-left: 10px;
+    text-align: left;
+}
+
+QPushButton[grouptitle='true']:hover{
+    background: rgb(215, 215, 215);
+    border-radius: 0;
+}
+
+QPushButton[grouptitle='true']:pressed{}
+
+QWidget[groupwidget='true']{
+    background:  rgb(215, 215, 215);
 }
 
 QComboBox {

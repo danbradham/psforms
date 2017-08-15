@@ -185,7 +185,7 @@ class FormDialog(QtWidgets.QDialog):
 
         self.layout = QtWidgets.QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setRowStretch(0, 1)
+        self.layout.setRowStretch(1, 1)
         self.setLayout(self.layout)
 
         self.button_layout = QtWidgets.QHBoxLayout()
@@ -194,7 +194,7 @@ class FormDialog(QtWidgets.QDialog):
         self.button_layout.addWidget(self.accept_button)
 
         self.layout.addWidget(self.widget, 0, 0)
-        self.layout.addLayout(self.button_layout, 1, 0)
+        self.layout.addLayout(self.button_layout, 2, 0)
 
     def __getattr__(self, attr):
         try:
@@ -206,6 +206,50 @@ class FormDialog(QtWidgets.QDialog):
         if self.widget.valid:
             self.accept()
         return
+
+
+class FormGroup(QtWidgets.QWidget):
+
+    def __init__(self, widget, *args, **kwargs):
+        super(FormGroup, self).__init__(*args, **kwargs)
+
+        self.widget = widget
+        self.widget.setProperty('groupwidget', True)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setStretch(1, 0)
+        self.layout.setSpacing(0)
+        self.setLayout(self.layout)
+
+        self.title = QtWidgets.QPushButton(self.widget.name)
+        icon = QtGui.QIcon()
+        icon.addPixmap(
+            QtGui.QPixmap(':/icons/plus'),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off
+        )
+        icon.addPixmap(
+            QtGui.QPixmap(':/icons/minus'),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.On
+        )
+        self.title.setIcon(icon)
+        self.title.setProperty('grouptitle', True)
+        self.title.setCheckable(True)
+        self.title.setChecked(True)
+        self.title.toggled.connect(self.toggle_collapsed)
+        self.layout.addWidget(self.title)
+        self.layout.addWidget(self.widget)
+
+    def toggle_collapsed(self, collapsed):
+        self.widget.setVisible(collapsed)
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.widget, attr)
+        except AttributeError:
+            raise AttributeError('FormDialog has no attr: {}'.format(attr))
 
 
 class Header(QtWidgets.QWidget):
@@ -312,7 +356,7 @@ class ScalingImage(QtWidgets.QLabel):
 
         offsetX = -((self.pixmap.width() - self.width())*0.5)
         offsetY = -((self.pixmap.height() - self.height())*0.5)
-        painter = QtWidgets.QPainter(self)
+        painter = QtGui.QPainter(self)
         painter.drawPixmap(offsetX, offsetY, self.pixmap)
 
 

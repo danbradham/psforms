@@ -70,7 +70,8 @@ class LiveLinker(QtCore.QFileSystemWatcher):
 
         widgets = self.path_mapping[path]
         with open(path) as f:
+            style = f.read()
             for widget in widgets:
-                widget.setStyleSheet(f.read())
+                widget.setStyleSheet(style)
                 widget.style().unpolish(widget)
                 widget.style().polish(widget)

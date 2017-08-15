@@ -77,6 +77,7 @@ class VisualTestForm(Form):
         title='Visual Test Form',
         description='Stylsheet + widget tests',
         header=True,
+        subforms_as_groups=True
     )
 
     image_form = ImageTestForm()

@@ -6,7 +6,7 @@ except ImportError:
 from Qt import QtWidgets, QtCore, QtGui
 
 from .fields import FieldType
-from .widgets import FormDialog, FormWidget
+from .widgets import FormDialog, FormWidget, FormGroup
 from .utils import Ordered, itemattrgetter
 
 
@@ -21,6 +21,7 @@ class FormMetaData(object):
         labeled=True,
         labels_on_top=True,
         layout_horizontal=False,
+        subforms_as_groups=False,
     )
 
     def __init__(self, **kwargs):
@@ -101,9 +102,18 @@ class Form(Ordered):
                 form_widget.add_control(name, control)
 
         for name, form in cls.forms():
-            form_widget.add_form(name, form.as_widget(form_widget))
+            if cls.meta.subforms_as_groups:
+                form_widget.add_form(name, form.as_group(form_widget))
+            else:
+                form_widget.add_form(name, form.as_widget(form_widget))
 
         return form_widget
+
+    @classmethod
+    def as_group(cls, parent=None):
+
+        group = FormGroup(cls.as_widget(), parent=parent)
+        return group
 
     @classmethod
     def as_dialog(cls, frameless=False, dim=False, parent=None):
