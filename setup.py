@@ -3,7 +3,8 @@
 
 import re
 from setuptools import setup, find_packages
-import os
+import shutil
+from subprocess import check_call
 import sys
 
 
@@ -25,12 +26,18 @@ info = get_info('psforms/__init__.py')
 
 
 if sys.argv[-1] == 'cheeseit!':
-    os.system('python setup.py sdist upload')
+    try:
+        check_call('python setup.py sdist bdist_wheel')
+        check_call('twine upload dist/*')
+    finally:
+        shutil.rmtree('dist')
+        shutil.rmtree('build')
+        shutil.rmtree('psforms.egg-info')
+    sys.exit()
+elif sys.argv[-1] == 'testit!':
+    check_call('python setup.py sdist bdist_wheel upload -r pypitest')
     sys.exit()
 
-elif sys.argv[-1] == 'testit!':
-    os.system('python setup.py sdist upload -r pypitest')
-    sys.exit()
 
 with open("README.rst") as f:
     readme = f.read()
