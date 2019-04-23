@@ -203,3 +203,37 @@ ImageField = create_fieldtype(
     'ImageField',
     control_cls=controls.ImageControl,
 )
+
+TextField = create_fieldtype(
+    'TextField',
+    control_cls=controls.TextControl,
+)
+
+
+field_map = {cls.__name__: cls for cls in FieldType.__subclasses__()}
+type_map = {
+    'image': ImageField,
+    'folder': FolderField,
+    'text': TextField,
+    'file': FileField,
+    'str': StringField,
+    '(bool,)': ButtonOptionField,
+    '(int,)': IntOptionField,
+    '(str,)': StringOptionField,
+    'int': IntField,
+    'float': FloatField,
+    '(int, int)': Int2Field,
+    '(float, float)': Float2Field,
+    'bool': BoolField,
+    'list': ListField,
+    str: StringField,
+    (bool,): ButtonOptionField,
+    (int,): IntOptionField,
+    (str,): StringOptionField,
+    int: IntField,
+    float: FloatField,
+    (int, int): Int2Field,
+    (float, float): Float2Field,
+    bool: BoolField,
+    list: ListField,
+}

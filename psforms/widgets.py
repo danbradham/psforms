@@ -1,7 +1,5 @@
 from Qt import QtWidgets, QtCore, QtGui
 import math
-import os
-from functools import partial
 from . import resource
 from .exc import *
 
@@ -210,6 +208,8 @@ class FormDialog(QtWidgets.QDialog):
 
 class FormGroup(QtWidgets.QWidget):
 
+    toggled = QtCore.Signal(bool)
+
     def __init__(self, widget, *args, **kwargs):
         super(FormGroup, self).__init__(*args, **kwargs)
 
@@ -242,8 +242,15 @@ class FormGroup(QtWidgets.QWidget):
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.widget)
 
+    def set_enabled(self, value):
+        self.title.blockSignals(True)
+        self.title.setChecked(value)
+        self.widget.setVisible(value)
+        self.title.blockSignals(False)
+
     def toggle_collapsed(self, collapsed):
-        self.widget.setVisible(collapsed)
+        self.toggled.emit(collapsed)
+        self.widget.setVisible(self.title.isChecked())
 
     def __getattr__(self, attr):
         try:
@@ -354,8 +361,8 @@ class ScalingImage(QtWidgets.QLabel):
             self.scale_pixmap()
             self.do_resize = False
 
-        offsetX = -((self.pixmap.width() - self.width())*0.5)
-        offsetY = -((self.pixmap.height() - self.height())*0.5)
+        offsetX = -((self.pixmap.width() - self.width()) * 0.5)
+        offsetY = -((self.pixmap.height() - self.height()) * 0.5)
         painter = QtGui.QPainter(self)
         painter.drawPixmap(offsetX, offsetY, self.pixmap)
 

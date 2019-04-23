@@ -5,7 +5,7 @@ except ImportError:
     from ordereddict import OrderedDict
 from Qt import QtWidgets, QtCore, QtGui
 
-from .fields import FieldType
+from .fields import FieldType, type_map, field_map
 from .widgets import FormDialog, FormWidget, FormGroup
 from .utils import Ordered, itemattrgetter
 
@@ -173,3 +173,23 @@ class Form(Ordered):
             dialog.show = _show
 
         return dialog
+
+
+def generate_form(name, fields, **metadata):
+    '''Generate a form from a name and a list of fields.'''
+
+    metadata.setdefault('title', name.title())
+
+    bases = (Form,)
+    attrs = {'meta': FormMetaData(**metadata)}
+    for field in fields:
+        if field['type'] not in type_map:
+            raise Exception('Invalid field type %s', field['type'])
+
+        field_type = type_map[field['type']]
+        name = field.pop('name')
+        label = field.pop('label', name)
+        form_field = field_type(label, **field)
+        attrs[name] = form_field
+
+    return type(name, bases, attrs)

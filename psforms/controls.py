@@ -344,6 +344,12 @@ class OptionControl(BaseControl):
             QtCore.Qt.UserRole
         )
 
+    def get_text(self):
+        return self.widget.currentText()
+
+    def set_text(self, value):
+        self.widget.setCurrentIndex(self.widget.findText(value))
+
     def get_value(self):
         return self.widget.currentText()
 
@@ -455,6 +461,22 @@ class StringControl(BaseControl):
 
     def set_value(self, value):
         self.widget.setText(value)
+
+
+class TextControl(BaseControl):
+
+    def init_widgets(self):
+        le = QtWidgets.QTextEdit(parent=self.parent())
+        le.textChanged.connect(self.emit_changed)
+        return (le,)
+
+    def get_value(self):
+        return self.widget.toPlainText()
+
+    def set_value(self, value):
+        self.blockSignals(True)
+        self.widget.setText(value)
+        self.blockSignals(False)
 
 
 class BrowseControl(BaseControl):
@@ -611,3 +633,6 @@ class ListControl(BaseControl):
                 self.widget.setCurrentItem(items[0])
         elif isinstance(value, int):
             self.widget.setCurrentIndex(int)
+
+
+control_map = {cls.__name__: cls for cls in BaseControl.__subclasses__()}
